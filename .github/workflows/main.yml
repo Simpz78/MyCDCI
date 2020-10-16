@@ -4,7 +4,9 @@ on:
   push:
     branches: [ master ]
 
-jobs:
+
+
+jobs:  
   build:
     runs-on: windows-latest
 
@@ -18,5 +20,11 @@ jobs:
       run: nuget restore TestCDCI.sln
     - name: Build the solution
       run: msbuild TestCDCI.sln -p:Configuration=Debug
-    - name: Run a one-line script
+    
+
+  test:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Running test
       run:  '& "$(vswhere -property installationPath)\Common7\IDE\Extensions\TestPlatform\VSTest.Console.exe" Tests\bin\Debug\Tests.dll'
