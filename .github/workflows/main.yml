@@ -23,6 +23,7 @@ jobs:
     
 
   test:
+    needs: [build]
     runs-on: windows-latest
     
     steps:
