@@ -11,7 +11,7 @@ namespace Tests
         {
             string testString = "test";
 
-            Assert.AreEqual("test", testString);
+            Assert.AreEqual("test1", testString);
         }
     }
 }
