@@ -10,11 +10,11 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
+    - name: Setup MSBuild.exe
+      uses: microsoft/setup-msbuild@v1
     - name: Setup Nuget.exe
-      uses: warrenbuckley/Setup-Nuget@v1
+      uses: NuGet/setup-nuget@v1.0.2
     - name: Restore packages
       run: nuget restore TestCDCI.sln
-    - name: Setup MSBuild.exe
-      uses: warrenbuckley/Setup-MSBuild@v1
-    - name: Build with MSBuild
-      run: msbuild  TestCDCI.sln -p:Configuration=Debug
+    - name: Build the solution
+      run: msbuild TestCDCI.sln -p:Configuration=Debug
