@@ -26,10 +26,10 @@ jobs:
         ls "TestCDCI\DB"
     - name: update database schema using dacpac
       uses: abelsquidhead/dacpac-deploy@master
-        with:
-          connectionString: ${{ secrets.DATABASE_CONNECTION_STRING }}
-          dacpac: 'TestCDCI\DB\sdi.dapac'
-          additionalArguments: '/p:BlockOnPossibleDataLoss=False' 
+      with:
+        connectionString: ${{ secrets.DATABASE_CONNECTION_STRING }}
+        dacpac: 'TestCDCI\DB\sdi.dapac'
+        additionalArguments: '/p:BlockOnPossibleDataLoss=False' 
 
     
 
