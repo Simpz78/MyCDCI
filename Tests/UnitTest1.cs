@@ -44,7 +44,7 @@ namespace Tests
             TestCDCI.Class c = new TestCDCI.Class();
             string testString = c.ConnectionString;
 
-            using (SqlConnection conn = new SqlConnection(@"Server=(localdb)\MSSQLLocalDB;Database=master;Trusted_Connection=True"))
+            using (SqlConnection conn = new SqlConnection(@"Server=(localdb)\MSSQLLocalDB;Database=sdi;Trusted_Connection=True"))
             //using (SqlConnection conn = new SqlConnection(testString))
             {
 
