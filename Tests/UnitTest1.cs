@@ -31,7 +31,7 @@ namespace Tests
             TestCDCI.Class c = new TestCDCI.Class();
             string testString = c.ConnectionString;
 
-            using (SqlConnection conn = new SqlConnection(@"Server=(localdb)\MSSQLLocalDB;Database=master;Trusted_Connection=True"))
+            using (SqlConnection conn = new SqlConnection(@"Server=(localdb)\MSSQLLocalDB;Database=sdi;Trusted_Connection=True"))
             {
                 conn.Open();
                 Assert.AreEqual(System.Data.ConnectionState.Open, conn.State);
@@ -41,11 +41,17 @@ namespace Tests
         [TestMethod]
         public void BuildDb()
         {
+            TestCDCI.Class c = new TestCDCI.Class();
+            string testString = c.ConnectionString;
+
             using (SqlConnection conn = new SqlConnection(@"Server=(localdb)\MSSQLLocalDB;Database=master;Trusted_Connection=True"))
+            //using (SqlConnection conn = new SqlConnection(testString))
             {
+
                 conn.Open();
                 string script = File.ReadAllText(@"D:\a\MyCDCI\MyCDCI\Tests\CreateDB.sql");
-                script = script.Replace("\r\n", " ");
+                //string script = File.ReadAllText(@"C:\Progetti_VS\2017\TestCDCI_GITHUB\Tests\CreateDB.sql");
+                script = script.Replace("\r\n", Environment.NewLine);
 
                 using (SqlCommand command = new SqlCommand(script, conn))
                 {
