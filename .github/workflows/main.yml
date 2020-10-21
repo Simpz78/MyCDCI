@@ -28,7 +28,7 @@ jobs:
       uses: abelsquidhead/dacpac-deploy@master
       with:
         connectionString: ${{ secrets.DATABASE_CONNECTION_STRING }}
-        dacpac: 'TestCDCI\DB\sdi.dapac'
+        dacpac: 'TestCDCI\DB\sdi.dacpac'
         additionalArguments: '/p:BlockOnPossibleDataLoss=False' 
 
     
