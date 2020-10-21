@@ -22,8 +22,8 @@ jobs:
       run: msbuild TestCDCI.sln -p:Configuration=Debug
     - name: find dacpac
       run: |
-        echo "ls %GITHUB_WORKSPACE%\DB"
-        ls "%GITHUB_WORKSPACE%\DB"
+        echo "ls DB"
+        ls "DB"
 
     
 
