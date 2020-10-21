@@ -21,6 +21,8 @@ jobs:
     - name: Create DB Instance 
       run: 
         SqlLocalDB start MSSQLLocalDB 
+    - name: Create DB SDI
+      run: 
         sqlcmd -S "(localdb)\MSSQLLocalDB" -Q "create database sdi;"
     - name: update database schema using dacpac
       uses: abelsquidhead/dacpac-deploy@master
