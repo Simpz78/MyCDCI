@@ -19,6 +19,7 @@ jobs:
         ls "TestCDCI\DB"
         ls "c:\Program Files\Microsoft SQL Server\130\LocalDB\Binn"
     - name: Create DB Instance 
+      run: 
         SqlLocalDB start MSSQLLocalDB
         sqlcmd -S "(localdb)\MSSQLLocalDB" 
     - name: update database schema using dacpac
