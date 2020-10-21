@@ -22,8 +22,8 @@ jobs:
       run: msbuild TestCDCI.sln -p:Configuration=Debug
     - name: find dacpac
       run: |
-        echo "ls DB"
-        ls "DB"
+        echo "ls TestCDCI\DB"
+        ls "TestCDCI\DB"
 
     
 
