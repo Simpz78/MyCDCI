@@ -1,0 +1,1008 @@
+USE [master]
+GO
+/****** Object:  Database [sdi2]    Script Date: 21/10/2020 16:29:38 ******/
+CREATE DATABASE [sdi2]
+ CONTAINMENT = NONE 
+ WITH CATALOG_COLLATION = DATABASE_DEFAULT
+GO
+ALTER DATABASE [sdi2] SET COMPATIBILITY_LEVEL = 110
+GO
+IF (1 = FULLTEXTSERVICEPROPERTY('IsFullTextInstalled'))
+begin
+EXEC [sdi2].[dbo].[sp_fulltext_database] @action = 'enable'
+end
+GO
+ALTER DATABASE [sdi2] SET ANSI_NULL_DEFAULT OFF 
+GO
+ALTER DATABASE [sdi2] SET ANSI_NULLS OFF 
+GO
+ALTER DATABASE [sdi2] SET ANSI_PADDING OFF 
+GO
+ALTER DATABASE [sdi2] SET ANSI_WARNINGS OFF 
+GO
+ALTER DATABASE [sdi2] SET ARITHABORT OFF 
+GO
+ALTER DATABASE [sdi2] SET AUTO_CLOSE OFF 
+GO
+ALTER DATABASE [sdi2] SET AUTO_SHRINK OFF 
+GO
+ALTER DATABASE [sdi2] SET AUTO_UPDATE_STATISTICS ON 
+GO
+ALTER DATABASE [sdi2] SET CURSOR_CLOSE_ON_COMMIT OFF 
+GO
+ALTER DATABASE [sdi2] SET CURSOR_DEFAULT  GLOBAL 
+GO
+ALTER DATABASE [sdi2] SET CONCAT_NULL_YIELDS_NULL OFF 
+GO
+ALTER DATABASE [sdi2] SET NUMERIC_ROUNDABORT OFF 
+GO
+ALTER DATABASE [sdi2] SET QUOTED_IDENTIFIER OFF 
+GO
+ALTER DATABASE [sdi2] SET RECURSIVE_TRIGGERS OFF 
+GO
+ALTER DATABASE [sdi2] SET  DISABLE_BROKER 
+GO
+ALTER DATABASE [sdi2] SET AUTO_UPDATE_STATISTICS_ASYNC OFF 
+GO
+ALTER DATABASE [sdi2] SET DATE_CORRELATION_OPTIMIZATION OFF 
+GO
+ALTER DATABASE [sdi2] SET TRUSTWORTHY OFF 
+GO
+ALTER DATABASE [sdi2] SET ALLOW_SNAPSHOT_ISOLATION OFF 
+GO
+ALTER DATABASE [sdi2] SET PARAMETERIZATION SIMPLE 
+GO
+ALTER DATABASE [sdi2] SET READ_COMMITTED_SNAPSHOT OFF 
+GO
+ALTER DATABASE [sdi2] SET HONOR_BROKER_PRIORITY OFF 
+GO
+ALTER DATABASE [sdi2] SET RECOVERY SIMPLE 
+GO
+ALTER DATABASE [sdi2] SET  MULTI_USER 
+GO
+ALTER DATABASE [sdi2] SET PAGE_VERIFY CHECKSUM  
+GO
+ALTER DATABASE [sdi2] SET DB_CHAINING OFF 
+GO
+ALTER DATABASE [sdi2] SET FILESTREAM( NON_TRANSACTED_ACCESS = OFF ) 
+GO
+ALTER DATABASE [sdi2] SET TARGET_RECOVERY_TIME = 0 SECONDS 
+GO
+ALTER DATABASE [sdi2] SET DELAYED_DURABILITY = DISABLED 
+GO
+ALTER DATABASE [sdi2] SET QUERY_STORE = OFF
+GO
+USE [sdi2]
+GO
+/****** Object:  User [studioboost]    Script Date: 21/10/2020 16:29:39 ******/
+CREATE USER [studioboost] FOR LOGIN [studioboost] WITH DEFAULT_SCHEMA=[db_owner]
+GO
+ALTER ROLE [db_owner] ADD MEMBER [studioboost]
+GO
+/****** Object:  Table [dbo].[Allegati]    Script Date: 21/10/2020 16:29:39 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Allegati](
+	[Idmail] [decimal](18, 0) NULL,
+	[Nomefile] [nvarchar](100) NULL
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Mail]    Script Date: 21/10/2020 16:29:39 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Mail](
+	[Id] [decimal](18, 0) IDENTITY(1,1) NOT NULL,
+	[Uid] [nvarchar](250) NULL,
+	[Data] [smalldatetime] NULL,
+	[Soggetto] [nvarchar](250) NULL,
+	[Testo] [nvarchar](max) NULL,
+	[Mittente] [nvarchar](50) NULL,
+	[Processato] [bit] NULL,
+	[ExtraSistema] [bit] NULL,
+ CONSTRAINT [PK_Mail] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  View [dbo].[V_lista]    Script Date: 21/10/2020 16:29:39 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE VIEW [dbo].[V_lista]
+AS
+SELECT dbo.Mail.Id, dbo.Mail.Soggetto, dbo.Allegati.Nomefile, dbo.Mail.Data, dbo.Mail.Uid
+FROM   dbo.Mail LEFT OUTER JOIN
+             dbo.Allegati ON dbo.Allegati.Idmail = dbo.Mail.Id AND dbo.Allegati.Nomefile <> 'daticert.xml' AND dbo.Allegati.Nomefile <> 'postacert.eml' AND dbo.Allegati.Nomefile <> 'smime.p7s'
+WHERE (dbo.Mail.Processato = 0)
+
+GO
+/****** Object:  Table [dbo].[Aziende]    Script Date: 21/10/2020 16:29:39 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Aziende](
+	[Id] [numeric](18, 0) IDENTITY(1,1) NOT NULL,
+	[Denominazione] [nvarchar](250) NULL,
+	[KeySoteria] [nvarchar](50) NULL,
+ CONSTRAINT [PK_Aziende] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Esiti]    Script Date: 21/10/2020 16:29:39 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Esiti](
+	[Idfattura] [decimal](18, 0) NULL,
+	[Esito] [nvarchar](max) NULL,
+	[Data] [smalldatetime] NULL,
+	[JsonRisposta] [nvarchar](max) NULL
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Fatture]    Script Date: 21/10/2020 16:29:39 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Fatture](
+	[Id] [numeric](18, 0) IDENTITY(1,1) NOT NULL,
+	[Nome] [nvarchar](50) NULL,
+	[IdFatturaSDI] [nvarchar](50) NULL,
+	[Firmato] [bit] NULL,
+	[Spedito] [bit] NULL,
+	[Ricevuto] [bit] NULL,
+	[Esito] [bit] NULL,
+	[Accettato] [bit] NULL,
+	[Scarto] [bit] NULL,
+	[MancataConsegna] [bit] NULL,
+	[ProntoSoteria] [bit] NULL,
+	[Stato] [nvarchar](50) NULL,
+	[Idutente] [decimal](18, 0) NULL,
+	[Idsoteria] [decimal](18, 0) NULL,
+	[Idazienda] [decimal](18, 0) NULL,
+	[Note] [nvarchar](max) NULL,
+	[Dataspedito] [smalldatetime] NULL,
+	[Identificativo] [nvarchar](50) NULL,
+	[Dataricezione] [smalldatetime] NULL,
+	[b2b] [bit] NULL,
+	[SaltaCanaleSdi] [bit] NULL,
+	[FatturaInversa] [bit] NULL,
+	[IdCodaInvioPAD] [int] NULL,
+	[NomeFileGeneratoPAD] [nvarchar](max) NULL,
+	[IdNotificaPAD] [int] NULL,
+ CONSTRAINT [PK_Fatture] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[FattureContenuto]    Script Date: 21/10/2020 16:29:39 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[FattureContenuto](
+	[IdFattura] [int] NOT NULL,
+	[Contenuto] [varbinary](max) NULL,
+	[Dimensione] [bigint] NULL,
+ CONSTRAINT [PK_FattureContenuto] PRIMARY KEY CLUSTERED 
+(
+	[IdFattura] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[FattureRicevute]    Script Date: 21/10/2020 16:29:39 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[FattureRicevute](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[NomeFile] [nvarchar](150) NULL,
+	[Hash] [nvarchar](max) NULL,
+	[CodiceDestinatario] [nvarchar](50) NULL,
+	[Formato] [nvarchar](50) NULL,
+	[MessageId] [nvarchar](50) NULL,
+	[IdentificativoSdi] [nvarchar](50) NULL,
+	[EsitoSpedizione] [bit] NULL,
+	[ErroreSpedizione] [nvarchar](max) NULL,
+	[data] [smalldatetime] NULL,
+	[IdFattureZIP] [int] NULL,
+ CONSTRAINT [PK_FattureRicevute] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[FattureZIP]    Script Date: 21/10/2020 16:29:39 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[FattureZIP](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[PathFileXml] [nvarchar](max) NULL,
+	[PathFileXml_name] [nvarchar](max) NULL,
+	[CF] [nvarchar](max) NULL,
+	[PIVA] [nvarchar](max) NULL,
+	[DataRicezione] [datetime] NULL,
+	[Lavorato] [bit] NOT NULL,
+	[DataLavorazione] [datetime] NULL,
+	[Contenuto] [varbinary](max) NULL,
+	[ErroreInterno] [bit] NULL,
+	[ErroreDescrizione] [nvarchar](max) NULL,
+	[ErroreData] [datetime] NULL,
+ CONSTRAINT [PK_FattureZIP] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[FiFatture]    Script Date: 21/10/2020 16:29:39 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[FiFatture](
+	[IdFattura] [numeric](18, 0) NOT NULL,
+	[NomeFileFi] [nvarchar](150) NULL,
+	[FlagErrore] [bit] NULL,
+	[DataInserimento] [smalldatetime] NULL,
+	[FlagElaborato] [bit] NULL,
+	[rilavoratomanuale] [bit] NULL
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Logs]    Script Date: 21/10/2020 16:29:39 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Logs](
+	[IdLog] [int] IDENTITY(1,1) NOT NULL,
+	[DataLog] [datetime] NOT NULL,
+	[CodeLog] [varchar](25) NULL,
+	[DescriptionLong] [varchar](max) NULL,
+ CONSTRAINT [PK_dbo.Logs] PRIMARY KEY CLUSTERED 
+(
+	[IdLog] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[LogTimeout]    Script Date: 21/10/2020 16:29:39 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[LogTimeout](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[IdFattura] [int] NULL,
+	[DataErrore] [datetime] NULL,
+	[Elaborato] [bit] NULL,
+	[DataElaborazione] [datetime] NULL,
+	[Messaggio] [nvarchar](max) NULL,
+	[FunzioneErrore] [nvarchar](max) NULL,
+	[Identificativo] [nvarchar](max) NULL,
+ CONSTRAINT [PK_LogTimeout] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[SdiFtp]    Script Date: 21/10/2020 16:29:39 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[SdiFtp](
+	[NomeFile] [nvarchar](150) NOT NULL,
+	[Esitoletto] [bit] NULL,
+	[Corretto] [bit] NULL,
+	[InviatoSdi] [bit] NULL,
+	[IdFattura] [numeric](18, 0) NULL,
+	[Id] [numeric](18, 0) IDENTITY(1,1) NOT NULL,
+	[NomeSupporto] [nvarchar](150) NULL,
+ CONSTRAINT [PK_SdiFtp] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Utenti]    Script Date: 21/10/2020 16:29:39 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Utenti](
+	[Id] [decimal](18, 0) NOT NULL,
+	[Username] [nvarchar](50) NULL,
+	[Password] [nvarchar](50) NULL,
+	[Chiave] [uniqueidentifier] NULL,
+	[Status] [bit] NULL,
+ CONSTRAINT [PK_Utenti] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[UtentiAzienda]    Script Date: 21/10/2020 16:29:39 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[UtentiAzienda](
+	[Id] [numeric](18, 0) IDENTITY(1,1) NOT NULL,
+	[Idutente] [numeric](18, 0) NULL,
+	[Idazienda] [numeric](18, 0) NULL,
+ CONSTRAINT [PK_UtentiAzienda] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+INSERT [dbo].[Esiti] ([Idfattura], [Esito], [Data], [JsonRisposta]) VALUES (CAST(12 AS Decimal(18, 0)), N'La fattura è disponibile in consultazione nell''area riservata a partire dalla ''Data Messa a Disposizione''. Non è stato possibile recapitare la fattura/e al destinatario per indisponibilità dell''indirizzo telematico di ricezione o perché tale indirizzo non è stato indicato in fattura (Codice Destinatario: 0000000). MessageId: 1118659097 Data messa a disposizione: 04/01/2019', CAST(N'2019-01-10T14:44:00' AS SmallDateTime), NULL)
+GO
+INSERT [dbo].[Esiti] ([Idfattura], [Esito], [Data], [JsonRisposta]) VALUES (CAST(14 AS Decimal(18, 0)), N'La fattura è disponibile in consultazione nell''area riservata a partire dalla ''Data Messa a Disposizione''. Non è stato possibile recapitare la fattura/e al destinatario per indisponibilità dell''indirizzo telematico di ricezione o perché tale indirizzo non è stato indicato in fattura (Codice Destinatario: 0000000). MessageId: 1119905137 Data messa a disposizione: 05/01/2019', CAST(N'2019-02-27T14:28:00' AS SmallDateTime), NULL)
+GO
+INSERT [dbo].[Esiti] ([Idfattura], [Esito], [Data], [JsonRisposta]) VALUES (CAST(16 AS Decimal(18, 0)), N'Inoltrata al Sdi', CAST(N'2019-03-12T17:56:00' AS SmallDateTime), NULL)
+GO
+INSERT [dbo].[Esiti] ([Idfattura], [Esito], [Data], [JsonRisposta]) VALUES (CAST(16 AS Decimal(18, 0)), N'Inoltrata al Sdi', CAST(N'2019-03-12T18:17:00' AS SmallDateTime), NULL)
+GO
+INSERT [dbo].[Esiti] ([Idfattura], [Esito], [Data], [JsonRisposta]) VALUES (CAST(16 AS Decimal(18, 0)), N'Inoltrata al Sdi', CAST(N'2019-03-12T18:20:00' AS SmallDateTime), NULL)
+GO
+INSERT [dbo].[Esiti] ([Idfattura], [Esito], [Data], [JsonRisposta]) VALUES (CAST(16 AS Decimal(18, 0)), N'Inoltrata al Sdi', CAST(N'2019-03-12T18:20:00' AS SmallDateTime), NULL)
+GO
+INSERT [dbo].[Esiti] ([Idfattura], [Esito], [Data], [JsonRisposta]) VALUES (CAST(17 AS Decimal(18, 0)), N'Inoltrata al Sdi', CAST(N'2019-03-12T18:39:00' AS SmallDateTime), NULL)
+GO
+INSERT [dbo].[Esiti] ([Idfattura], [Esito], [Data], [JsonRisposta]) VALUES (CAST(17 AS Decimal(18, 0)), N'Inoltrata al Sdi', CAST(N'2019-03-12T18:42:00' AS SmallDateTime), NULL)
+GO
+INSERT [dbo].[Esiti] ([Idfattura], [Esito], [Data], [JsonRisposta]) VALUES (CAST(16 AS Decimal(18, 0)), N'Inoltrata al Sdi', CAST(N'2019-03-12T18:42:00' AS SmallDateTime), NULL)
+GO
+INSERT [dbo].[Esiti] ([Idfattura], [Esito], [Data], [JsonRisposta]) VALUES (CAST(17 AS Decimal(18, 0)), N'Inoltrata al Sdi', CAST(N'2019-03-12T18:43:00' AS SmallDateTime), NULL)
+GO
+INSERT [dbo].[Esiti] ([Idfattura], [Esito], [Data], [JsonRisposta]) VALUES (CAST(17 AS Decimal(18, 0)), N'Inoltrata al Sdi', CAST(N'2019-03-12T18:45:00' AS SmallDateTime), NULL)
+GO
+INSERT [dbo].[Esiti] ([Idfattura], [Esito], [Data], [JsonRisposta]) VALUES (CAST(16 AS Decimal(18, 0)), N'Inoltrata al Sdi', CAST(N'2019-03-12T18:46:00' AS SmallDateTime), NULL)
+GO
+INSERT [dbo].[Esiti] ([Idfattura], [Esito], [Data], [JsonRisposta]) VALUES (CAST(34 AS Decimal(18, 0)), N'Fattura accettata per decorrenza termini.', CAST(N'2020-07-22T15:01:00' AS SmallDateTime), N'{
+  "StatoFattura": "Scartata",
+  "idfattura": "1731",
+  "CodiceStatoFattura": "3",
+  "StatoEstesoFattura": "Errore in invio fattura: La fattura &egrave; stata scartata dal sistema SDI. Generare una nuova fattura. (Notifica NS)",
+  "NomeFile": "IT00000000000_00955.xml.p7m",
+  "DenominazioneCreditore": "Cliente pubblico 1",
+  "TipoDocumento": "TD01",
+  "CodiceFiscaleCreditore": "03546762513",
+  "CodiceUfficio": "0000000",
+  "Id_SDI": "10001731",
+  "DataInvio": "2020-07-21",
+  "DataConsegna": "0000-00-00",
+  "CdanCodiceStatoFattura": "0",
+  "CdanStatoFattura": "DaVerificare",
+  "FatturaInversa": "N",
+  "seq_NOTIFICA": [
+    {
+      "TipoNotifica": "IF",
+      "DataInvio": "2020-07-21",
+      "OraInvio": "09:54:38",
+      "DataRicezione": "Non ricevuta",
+      "__clz": ""
+    },
+    {
+      "TipoNotifica": "DT",
+      "DataInvio": "Non inviata",
+      "DataRicezione": "Non ricevuta",
+      "__clz": ""
+    }
+  ],
+  "__clz": ""
+}')
+GO
+INSERT [dbo].[Esiti] ([Idfattura], [Esito], [Data], [JsonRisposta]) VALUES (CAST(46 AS Decimal(18, 0)), N'Inoltrata al Sdi', CAST(N'2020-08-27T12:48:00' AS SmallDateTime), NULL)
+GO
+INSERT [dbo].[Esiti] ([Idfattura], [Esito], [Data], [JsonRisposta]) VALUES (CAST(47 AS Decimal(18, 0)), N'Inoltrata al Sdi', CAST(N'2020-08-27T12:48:00' AS SmallDateTime), NULL)
+GO
+INSERT [dbo].[Esiti] ([Idfattura], [Esito], [Data], [JsonRisposta]) VALUES (CAST(48 AS Decimal(18, 0)), N'Inoltrata al Sdi', CAST(N'2020-08-27T12:48:00' AS SmallDateTime), NULL)
+GO
+INSERT [dbo].[Esiti] ([Idfattura], [Esito], [Data], [JsonRisposta]) VALUES (CAST(46 AS Decimal(18, 0)), N'Inoltrata al Sdi', CAST(N'2020-08-27T12:52:00' AS SmallDateTime), NULL)
+GO
+INSERT [dbo].[Esiti] ([Idfattura], [Esito], [Data], [JsonRisposta]) VALUES (CAST(55 AS Decimal(18, 0)), N'Inoltrata a PAD per SDI', CAST(N'2020-08-27T16:29:00' AS SmallDateTime), N'{
+  "error": "",
+  "result": {
+    "Valido": "OK",
+    "ok": "Invio in coda SDI effettuato correttamente.",
+    "VerificaInvioRes": "OK",
+    "idProgFattura_1": "0",
+    "idCodaInvio_1": "1742",
+    "IdNotifica": "1742",
+    "nomeFileGenerato": "IT00000000000_00966.xml.p7m",
+    "__clz": ""
+  },
+  "request_name": "FAESendXml"
+}')
+GO
+INSERT [dbo].[Esiti] ([Idfattura], [Esito], [Data], [JsonRisposta]) VALUES (CAST(56 AS Decimal(18, 0)), N'Inoltrata a PAD per SDI', CAST(N'2020-08-27T16:59:00' AS SmallDateTime), N'{
+  "error": "",
+  "result": {
+    "Valido": "OK",
+    "ok": "Invio in coda SDI effettuato correttamente.",
+    "VerificaInvioRes": "OK",
+    "idProgFattura_1": "0",
+    "idCodaInvio_1": "1742",
+    "IdNotifica": "1742",
+    "nomeFileGenerato": "IT00000000000_00966.xml.p7m",
+    "__clz": ""
+  },
+  "request_name": "FAESendXml"
+}')
+GO
+INSERT [dbo].[Esiti] ([Idfattura], [Esito], [Data], [JsonRisposta]) VALUES (CAST(0 AS Decimal(18, 0)), N'Fattura accettata per decorrenza termini.', CAST(N'2020-07-22T15:19:00' AS SmallDateTime), N'{
+  "StatoFattura": "Non cons.",
+  "idfattura": "1736",
+  "CodiceStatoFattura": "5",
+  "StatoEstesoFattura": "Il sistema non &egrave; stato in grado di inviare la fattura al destinatario. Attendere ulteriori notifiche. (Notifica MC)",
+  "NomeFile": "IT00000000000_00960.xml.p7m",
+  "DenominazioneCreditore": "Cliente pubblico 1",
+  "TipoDocumento": "TD01",
+  "CodiceFiscaleCreditore": "03546762513",
+  "CodiceUfficio": "0000000",
+  "Id_SDI": "10001736",
+  "DataInvio": "2020-07-21",
+  "DataConsegna": "0000-00-00",
+  "CdanCodiceStatoFattura": "0",
+  "CdanStatoFattura": "DaVerificare",
+  "FatturaInversa": "N",
+  "seq_NOTIFICA": [
+    {
+      "TipoNotifica": "IF",
+      "DataInvio": "2020-07-21",
+      "OraInvio": "09:58:57",
+      "DataRicezione": "Non ricevuta",
+      "__clz": ""
+    },
+    {
+      "TipoNotifica": "DT",
+      "DataInvio": "Non inviata",
+      "DataRicezione": "Non ricevuta",
+      "__clz": ""
+    }
+  ],
+  "__clz": ""
+}')
+GO
+INSERT [dbo].[Esiti] ([Idfattura], [Esito], [Data], [JsonRisposta]) VALUES (CAST(34 AS Decimal(18, 0)), N'Fattura accettata per decorrenza termini.', CAST(N'2020-07-22T15:20:00' AS SmallDateTime), N'{
+  "StatoFattura": "Consegnata",
+  "idfattura": "1731",
+  "CodiceStatoFattura": "4",
+  "StatoEstesoFattura": "Fattura consegnata al destinatario. (Notifica RC)",
+  "NomeFile": "IT00000000000_00955.xml.p7m",
+  "DenominazioneCreditore": "Cliente pubblico 1",
+  "TipoDocumento": "TD01",
+  "CodiceFiscaleCreditore": "03546762513",
+  "CodiceUfficio": "0000000",
+  "Id_SDI": "10001731",
+  "DataInvio": "2020-07-21",
+  "DataConsegna": "0000-00-00",
+  "CdanCodiceStatoFattura": "0",
+  "CdanStatoFattura": "DaVerificare",
+  "FatturaInversa": "N",
+  "seq_NOTIFICA": [
+    {
+      "TipoNotifica": "IF",
+      "DataInvio": "2020-07-21",
+      "OraInvio": "09:54:38",
+      "DataRicezione": "Non ricevuta",
+      "__clz": ""
+    },
+    {
+      "TipoNotifica": "DT",
+      "DataInvio": "Non inviata",
+      "DataRicezione": "Non ricevuta",
+      "__clz": ""
+    },
+    {
+      "TipoNotifica": "DT",
+      "DataInvio": "Non inviata",
+      "DataRicezione": "Non ricevuta",
+      "__clz": ""
+    }
+  ],
+  "__clz": ""
+}')
+GO
+INSERT [dbo].[Esiti] ([Idfattura], [Esito], [Data], [JsonRisposta]) VALUES (CAST(0 AS Decimal(18, 0)), N'Fattura accettata per decorrenza termini.', CAST(N'2020-07-22T15:35:00' AS SmallDateTime), N'{
+  "StatoFattura": "Non cons.",
+  "idfattura": "1736",
+  "CodiceStatoFattura": "5",
+  "StatoEstesoFattura": "Il sistema non &egrave; stato in grado di inviare la fattura al destinatario. Attendere ulteriori notifiche. (Notifica MC)",
+  "NomeFile": "IT00000000000_00960.xml.p7m",
+  "DenominazioneCreditore": "Cliente pubblico 1",
+  "TipoDocumento": "TD01",
+  "CodiceFiscaleCreditore": "03546762513",
+  "CodiceUfficio": "0000000",
+  "Id_SDI": "10001736",
+  "DataInvio": "2020-07-21",
+  "DataConsegna": "0000-00-00",
+  "CdanCodiceStatoFattura": "0",
+  "CdanStatoFattura": "DaVerificare",
+  "FatturaInversa": "N",
+  "seq_NOTIFICA": [
+    {
+      "TipoNotifica": "IF",
+      "DataInvio": "2020-07-21",
+      "OraInvio": "09:58:57",
+      "DataRicezione": "Non ricevuta",
+      "__clz": ""
+    },
+    {
+      "TipoNotifica": "DT",
+      "DataInvio": "Non inviata",
+      "DataRicezione": "Non ricevuta",
+      "__clz": ""
+    }
+  ],
+  "__clz": ""
+}')
+GO
+INSERT [dbo].[Esiti] ([Idfattura], [Esito], [Data], [JsonRisposta]) VALUES (CAST(47 AS Decimal(18, 0)), N'Inoltrata al Sdi', CAST(N'2020-08-27T12:52:00' AS SmallDateTime), NULL)
+GO
+INSERT [dbo].[Esiti] ([Idfattura], [Esito], [Data], [JsonRisposta]) VALUES (CAST(54 AS Decimal(18, 0)), N'Fattura accettata per decorrenza termini. Il sistema non &egrave; stato in grado di inviare la fattura al destinatario. Attendere ulteriori notifiche. (Notifica MC)', CAST(N'2020-08-27T16:14:00' AS SmallDateTime), N'{
+  "StatoFattura": "Non cons.",
+  "idfattura": "1742",
+  "CodiceStatoFattura": "5",
+  "StatoEstesoFattura": "Il sistema non &egrave; stato in grado di inviare la fattura al destinatario. Attendere ulteriori notifiche. (Notifica MC)",
+  "NomeFile": "IT00000000000_00966.xml.p7m",
+  "DenominazioneCreditore": "Cliente pubblico 1",
+  "TipoDocumento": "TD01",
+  "CodiceFiscaleCreditore": "03546762513",
+  "CodiceUfficio": "0000000",
+  "Id_SDI": "10001742",
+  "DataInvio": "2020-07-21",
+  "DataConsegna": "0000-00-00",
+  "CdanCodiceStatoFattura": "0",
+  "CdanStatoFattura": "DaVerificare",
+  "FatturaInversa": "N",
+  "seq_NOTIFICA": [
+    {
+      "TipoNotifica": "IF",
+      "DataInvio": "2020-07-21",
+      "OraInvio": "15:36:01",
+      "DataRicezione": "Non ricevuta",
+      "__clz": ""
+    },
+    {
+      "TipoNotifica": "DT",
+      "DataInvio": "Non inviata",
+      "DataRicezione": "Non ricevuta",
+      "__clz": ""
+    }
+  ],
+  "__clz": ""
+}')
+GO
+INSERT [dbo].[Esiti] ([Idfattura], [Esito], [Data], [JsonRisposta]) VALUES (CAST(0 AS Decimal(18, 0)), N'Fattura scartata. Elenco errori rilevati:
+Codice Errore: 00305
+Descrizione: 1.4.1.1.2 <IdCodice> non valido : 0861810063
+
+Codice Errore: 00311
+Descrizione: 1.1.4 <CodiceDestinatario> non valido : Codice Destinatario B2B G9H2JRW non trovato', CAST(N'2020-07-23T12:07:00' AS SmallDateTime), N'{
+  "StatoFattura": "Scartata",
+  "idfattura": "1736",
+  "CodiceStatoFattura": "3",
+  "StatoEstesoFattura": "Errore in invio fattura: La fattura &egrave; stata scartata dal sistema SDI. Generare una nuova fattura. (Notifica NS)",
+  "NomeFile": "IT00000000000_00960.xml.p7m",
+  "DenominazioneCreditore": "Cliente pubblico 1",
+  "TipoDocumento": "TD01",
+  "CodiceFiscaleCreditore": "03546762513",
+  "CodiceUfficio": "0000000",
+  "Id_SDI": "10001736",
+  "DataInvio": "2020-07-21",
+  "DataConsegna": "0000-00-00",
+  "CdanCodiceStatoFattura": "0",
+  "CdanStatoFattura": "DaVerificare",
+  "FatturaInversa": "N",
+  "seq_NOTIFICA": [
+    {
+      "TipoNotifica": "IF",
+      "DataInvio": "2020-07-21",
+      "OraInvio": "09:58:57",
+      "DataRicezione": "Non ricevuta",
+      "__clz": ""
+    },
+    {
+      "TipoNotifica": "NS",
+      "DataInvio": "Non inviata",
+      "DataRicezione": "Non ricevuta",
+      "Note": "Elenco errori rilevati:\nCodice Errore: 00305\nDescrizione: 1.4.1.1.2 <IdCodice> non valido : 0861810063\n\nCodice Errore: 00311\nDescrizione: 1.1.4 <CodiceDestinatario> non valido : Codice Destinatario B2B G9H2JRW non trovato",
+      "__clz": ""
+    }
+  ],
+  "__clz": ""
+}')
+GO
+INSERT [dbo].[Esiti] ([Idfattura], [Esito], [Data], [JsonRisposta]) VALUES (CAST(54 AS Decimal(18, 0)), N'Fattura accettata per decorrenza termini. Il sistema non &egrave; stato in grado di inviare la fattura al destinatario. Attendere ulteriori notifiche. (Notifica MC)', CAST(N'2020-08-27T16:30:00' AS SmallDateTime), N'{
+  "StatoFattura": "Non cons.",
+  "idfattura": "1742",
+  "CodiceStatoFattura": "5",
+  "StatoEstesoFattura": "Il sistema non &egrave; stato in grado di inviare la fattura al destinatario. Attendere ulteriori notifiche. (Notifica MC)",
+  "NomeFile": "IT00000000000_00966.xml.p7m",
+  "DenominazioneCreditore": "Cliente pubblico 1",
+  "TipoDocumento": "TD01",
+  "CodiceFiscaleCreditore": "03546762513",
+  "CodiceUfficio": "0000000",
+  "Id_SDI": "10001742",
+  "DataInvio": "2020-07-21",
+  "DataConsegna": "0000-00-00",
+  "CdanCodiceStatoFattura": "0",
+  "CdanStatoFattura": "DaVerificare",
+  "FatturaInversa": "N",
+  "seq_NOTIFICA": [
+    {
+      "TipoNotifica": "IF",
+      "DataInvio": "2020-07-21",
+      "OraInvio": "15:36:01",
+      "DataRicezione": "Non ricevuta",
+      "__clz": ""
+    },
+    {
+      "TipoNotifica": "DT",
+      "DataInvio": "Non inviata",
+      "DataRicezione": "Non ricevuta",
+      "__clz": ""
+    }
+  ],
+  "__clz": ""
+}')
+GO
+INSERT [dbo].[Esiti] ([Idfattura], [Esito], [Data], [JsonRisposta]) VALUES (CAST(48 AS Decimal(18, 0)), N'Inoltrata al Sdi', CAST(N'2020-08-27T12:52:00' AS SmallDateTime), NULL)
+GO
+INSERT [dbo].[Esiti] ([Idfattura], [Esito], [Data], [JsonRisposta]) VALUES (CAST(50 AS Decimal(18, 0)), N'Inoltrata al Sdi', CAST(N'2020-08-27T12:52:00' AS SmallDateTime), NULL)
+GO
+SET IDENTITY_INSERT [dbo].[Fatture] ON 
+GO
+INSERT [dbo].[Fatture] ([Id], [Nome], [IdFatturaSDI], [Firmato], [Spedito], [Ricevuto], [Esito], [Accettato], [Scarto], [MancataConsegna], [ProntoSoteria], [Stato], [Idutente], [Idsoteria], [Idazienda], [Note], [Dataspedito], [Identificativo], [Dataricezione], [b2b], [SaltaCanaleSdi], [FatturaInversa], [IdCodaInvioPAD], [NomeFileGeneratoPAD], [IdNotificaPAD]) VALUES (CAST(46 AS Numeric(18, 0)), N'IT02607081201_4.xml', NULL, 1, 1, 0, 0, 0, 0, 0, 0, NULL, CAST(1 AS Decimal(18, 0)), NULL, NULL, NULL, CAST(N'2020-08-27T13:02:00' AS SmallDateTime), N'2222', CAST(N'2020-08-27T11:37:00' AS SmallDateTime), 0, 0, 0, NULL, NULL, NULL)
+GO
+INSERT [dbo].[Fatture] ([Id], [Nome], [IdFatturaSDI], [Firmato], [Spedito], [Ricevuto], [Esito], [Accettato], [Scarto], [MancataConsegna], [ProntoSoteria], [Stato], [Idutente], [Idsoteria], [Idazienda], [Note], [Dataspedito], [Identificativo], [Dataricezione], [b2b], [SaltaCanaleSdi], [FatturaInversa], [IdCodaInvioPAD], [NomeFileGeneratoPAD], [IdNotificaPAD]) VALUES (CAST(47 AS Numeric(18, 0)), N'IT02607081201_04.xml', NULL, 1, 1, 0, 0, 0, 0, 0, 0, NULL, CAST(1 AS Decimal(18, 0)), NULL, NULL, NULL, CAST(N'2020-08-27T13:02:00' AS SmallDateTime), N'2222', CAST(N'2020-08-27T11:39:00' AS SmallDateTime), 0, 0, 0, NULL, NULL, NULL)
+GO
+INSERT [dbo].[Fatture] ([Id], [Nome], [IdFatturaSDI], [Firmato], [Spedito], [Ricevuto], [Esito], [Accettato], [Scarto], [MancataConsegna], [ProntoSoteria], [Stato], [Idutente], [Idsoteria], [Idazienda], [Note], [Dataspedito], [Identificativo], [Dataricezione], [b2b], [SaltaCanaleSdi], [FatturaInversa], [IdCodaInvioPAD], [NomeFileGeneratoPAD], [IdNotificaPAD]) VALUES (CAST(48 AS Numeric(18, 0)), N'IT02607081201_5.xml', NULL, 0, 1, 0, 0, 0, 0, 0, 0, NULL, CAST(1 AS Decimal(18, 0)), NULL, NULL, NULL, CAST(N'2020-08-27T13:02:00' AS SmallDateTime), N'2222', CAST(N'2020-08-27T12:07:00' AS SmallDateTime), 1, 0, 0, NULL, NULL, NULL)
+GO
+INSERT [dbo].[Fatture] ([Id], [Nome], [IdFatturaSDI], [Firmato], [Spedito], [Ricevuto], [Esito], [Accettato], [Scarto], [MancataConsegna], [ProntoSoteria], [Stato], [Idutente], [Idsoteria], [Idazienda], [Note], [Dataspedito], [Identificativo], [Dataricezione], [b2b], [SaltaCanaleSdi], [FatturaInversa], [IdCodaInvioPAD], [NomeFileGeneratoPAD], [IdNotificaPAD]) VALUES (CAST(50 AS Numeric(18, 0)), N'IT02607081201_7.xml', NULL, 0, 1, 0, 0, 0, 0, 0, 0, NULL, CAST(1 AS Decimal(18, 0)), NULL, NULL, NULL, CAST(N'2020-08-27T13:02:00' AS SmallDateTime), N'2222', CAST(N'2020-08-27T12:20:00' AS SmallDateTime), 1, 0, 0, NULL, NULL, NULL)
+GO
+INSERT [dbo].[Fatture] ([Id], [Nome], [IdFatturaSDI], [Firmato], [Spedito], [Ricevuto], [Esito], [Accettato], [Scarto], [MancataConsegna], [ProntoSoteria], [Stato], [Idutente], [Idsoteria], [Idazienda], [Note], [Dataspedito], [Identificativo], [Dataricezione], [b2b], [SaltaCanaleSdi], [FatturaInversa], [IdCodaInvioPAD], [NomeFileGeneratoPAD], [IdNotificaPAD]) VALUES (CAST(53 AS Numeric(18, 0)), N'IT02607081201_10PAD.xml', NULL, 0, 0, 0, 0, 0, 0, 0, 0, NULL, CAST(1 AS Decimal(18, 0)), NULL, NULL, NULL, CAST(N'2020-08-27T15:05:00' AS SmallDateTime), N'2222', CAST(N'2020-08-27T15:05:00' AS SmallDateTime), 1, 1, 0, NULL, NULL, NULL)
+GO
+INSERT [dbo].[Fatture] ([Id], [Nome], [IdFatturaSDI], [Firmato], [Spedito], [Ricevuto], [Esito], [Accettato], [Scarto], [MancataConsegna], [ProntoSoteria], [Stato], [Idutente], [Idsoteria], [Idazienda], [Note], [Dataspedito], [Identificativo], [Dataricezione], [b2b], [SaltaCanaleSdi], [FatturaInversa], [IdCodaInvioPAD], [NomeFileGeneratoPAD], [IdNotificaPAD]) VALUES (CAST(57 AS Numeric(18, 0)), N'IT02607081201_11PAD.xml', NULL, 0, 0, 0, 0, 0, 0, 0, 0, NULL, CAST(1 AS Decimal(18, 0)), NULL, NULL, NULL, CAST(N'2020-10-02T16:46:00' AS SmallDateTime), N'2222', CAST(N'2020-10-02T16:46:00' AS SmallDateTime), 1, 1, 0, NULL, NULL, NULL)
+GO
+SET IDENTITY_INSERT [dbo].[Fatture] OFF
+GO
+INSERT [dbo].[FattureContenuto] ([IdFattura], [Contenuto], [Dimensione]) VALUES (40, 0x1F8B0800000000000400B557516FDB36107E1FB0FF60F83D16A538991328EAECD8EE8C36A9E6B87D6725463BCC263D92165AFFB53DEC27ED2FEC48C93629C929D66C010248F71DC9BBEFBE3BCA7FFFF957FCE6CB66DD2B995420F85D3F1C907E8FF14CE4C08BBBFE4E3F5F8CFA6F921F7F88B7B773AAF54ED2D99A692D05878C1ED6B1BBFE3C1D8751BF879B7175BBBDEBFFA6F5F63608A0A48AC912F630A005E37BA08C6B49351B14A21C800E7291A9E08BCA8367BB3B0BCA7010F5F1C05E2F6E1FF80BA3399316457C4A35AC24551B50368ADA8EC822AFEC5AE37127BB4552CA144B16AB38383C7BF03DA69EB184443F91EB611446E4C638D6D6E301C19913E2548A42328CA7140B5E8248082197240E5AF6E38AB9901BAA85978865330EBAA0E3BA2AA429531A38D554E29EF355FA6E92C64107740A7076EF015C70257E5639603530CC065A331D9CA13ABE67B9C93FC5D434462A9DF8CC9231A785A4CF90814FF21C5446D76CF169ECD8BF591DB73EBFBF5CA0AA449DC7D4C4D5985F681F72D61C13A17E3C53C6C506D9DA5B529E263D8D44F4A8522203CC1F89F31CDCF03AB78C97AC80CD3182E53C1CC5816F3B69F00CC3F11316C5E39BE72061BF174909B4B795A2A4C8CED1E852334E932109090AD63C7AA46D7698C067B11605A78629FBEE78A0C24BE0987632F960F55EBF392E8F350DA6BC8F0D4AE2C0091BF73F232C549C55A05127C6D06EC0FF5776E4721846D1CDEB55E7EEF34AD561EF5AD9FD4BB1BD463FC0D9F72A488ACD37E4B37CF82FE473562538565FBA573A6E9D89C8BFBA77CE5BC699A46BF04577B04E45B6DBE0691E2D2BD88A13B09A92300E7C9BE33C8512144D661F9758A3EAD94571342711094717E4F2C2EC630D2E4DB8A31449344396AA47B7969BAD9078A5088D5A3B9D1E4683084B7606F525732E511F75099B300E4FD56780C319F24B8B3588F7A826D64EC09869121E92A85E5B0D35961A321C4A7E83549821384967CBA70F8FE3F7B3439F596B87F727BA36638698BFF0E05C1BDD563A7B2E66A4326C08AB4B5AE33D6CCE7AE2BAB0B3EAD71DE51AB084F8ED852538BE3A2E1F391A1E40A12C93741F07EEBBD7420CBBD182E6EE0E89DDB0616DF957C5F6BD6B9B3B8AD6F0C70EAD66AA459175754D8E42BACB6A75B004B605BC40C477EC5C6B97C367C0D95AE9F410741B68AC52A6658E0A573EBB330585590CD5818B3868587CF93793A8AC6D89DB8C535AD0460FDD0B9C9B46050EB84A496494D546DAEDD2C6107D103935E19EC087D4A8B86D6F4C92253C3309165A31899787737673C8BCE4EB6CFB1684E4D0F240F2CF20EDF174C2FCC1D4BD06BF57F54E8B39DE7CE6178651F90EE7B664B9F9A4ED82DDD593F123DE28A3E13B724D86575737D7D77604902BFC1F8DAE7003E3D121F0663095107C6BD765535F2771D0F5932AF907276B577F940D0000, 3476)
+GO
+INSERT [dbo].[FattureContenuto] ([IdFattura], [Contenuto], [Dimensione]) VALUES (44, 0x1F8B0800000000000400ED5A498FE3587276777B0A981ED469E07BA27DB35049523B1BD90973134589A42892A2445E06DC443D8A9BB88B3737E0B9FB1FCCD507FF3EC3373F2A9599522EDDD5536EF40C6009992546C48B88F7C5176F51D65DF2FDC4CCF3223599C0CDF3348E806DDE946E9A8138727FF86E221158F7BB9B3A0CA2EC7B27FBE1BB5D9E27DF23485555B755EF364E3DA48BA22882E208B47132E0FDF3A3759D8177CC316423F08ABD7343F31388B2DC8C6C178ECAC0F7D949C8C7B699C3F84FC34169666E5A8206DC9A9E1B35C074A33C3573F7D68BCB5B90234E6C67489D39C8F634191729B1DBEECDC38319A70E88CC14987F6AA5B7D0EC31C5E40B237C77FFF1DB9B9BBBD7084E5DD371D39316EA69381B3535B310642758CF72A8E19C07799EC370CFF2934632DDCCBDE7D43BE4F1F3959A8A1D60BBF7499A67598E757BC38189F7FBFBD6FAAC7A8A82BC13E64E4A632F75615265CC452588EFD13BE495ECC97A12A7A199C7573339F1E30E794BF534EE211DDACD7258861C1622BE5F4D18AD4FDD216FA8CE9821EF807647B94E3B0909E698C390E945A0760811995E6A6E810DAEE19A80CC360397D3880BF9CFE27C8934C4B83F18C2DFBD37307E40F9CD20E7F99F756DC160ADC6B889E1E7825DEB2F063ECDC5BC4E8976A338848035275C084A606E149987905DC92F537BD3D39DEC7A207C0A2C4F50EC0EB9963D53E81D6CEF14588E2BA42307A4A069E27B27846F88CA93E0121242BA1F0DE11BCE1E7EBC022B2C60F2E4825FB022D182737ABEB080042D416403F39E604F743D3F5D98886708DAA28A2FE0B8432E5286FEDFA113E4D989772D27610EAF7BE7D725DBE8F9F5456CBBF2F38544A302D0427093149615003BBEE9FE42CAFD352C2A817993C01A9BDD9FA0521FC550F43D2A5971107B91F9D3542217FF17547A97317085FCA93DE28D1D848C9DE3E5FEC1BA919B9A01B826E0A3948EED2284D1AE905141123F2B54BA6DEF6BD985310D4A9099F7CC4A86557AF87CA9858BF37D17C5469F30EC530F3D15F21A26E8318DEF6191CE9F2E8B1926710A37873887B47B0E8EA123F4763080657D5B7FCD9AF7677A02828A4FDBF5F59C38E7D9BACBB42DF3F6D4DBB960388A7E42B14F2D4857937B08FFD2FF7552978522DD08280F47898B14615D4D2F00310F22D77D0D5C2B86393CA2F7F0F8AAA98934876D17C4D74DFAA06B0B7B2F31B2B210099E79ECF593F40D6BCD0CDAA50E9EDCD03EF6687C165E36F1BB71E18C321BF6E2A91F0460A771B67553179E1C217F6FBCF4F6069EF36E7A6D575E5A5E38581666948316F9EEE0B6B57B125C18AD22281040067BE37EEFDD2197CF2F2AC8456D0CC985DDE7C4AFCA79AD7D317402E17E6FE0A5EE6AE570E13A744AA73DB4F44E3378217C65FEC0F0FBDE6870617E165EAEC601381450DA2EECDDEEC9F4527441CCB759F5996CEBFE266C1B7D31DBD8134F6E4074E3C155D6BCB1E3E82634E19A19C3F6FC79BA7D1ED992E66F986CC3DBDEE7B30D1B63B783DF9E6DBDDF846DE32F66DBCA7383206ED9560107983FCFAFEEDF3DBFB0C1E8172D6758FF6F6139EBFF2604C3BF98604A026F01370E5CD042CB3C532D70BDE8339632ECEF9E6ABF8868A35F9966F0F026033701F0BA10FF159ECF27DD0858005ECA1ECEB4F7E3D1E8B4FABED6BC18969DCEA0F01C713E1067D7056532E0B5C3C1434CE50E7921B93EAEBE9CC783F4F5D1F43469C9F4CC17476A78DC754EC4BB50AA12DA6D49FD5AF3BA535FEBA056881DB34DF7592948ED745FCB5FF04C06F06C094E2AD54DE175F322F6CB4BC94FD95EB865419C46E095C5107A7947F5FA42F3ACBBACF295E27250069BB4C863D81866FBFD62CBF4F6C609B794B75497234942BC4731BCDBBEA175FBF8069D5F467DA8F92B2911C0D5052A9E5D8871E812D089BD6B0DEFB1FEA887FFA907B7CE178AA701E76FFB2E54123D79FA12F0AD1117B299463232406BDE5FCE672EEF37B830178E44C5B13830BD782C51B860AC0791C37A9EA0120391C259735DA3C6862BE5B0DE39ACC6186BB134D855478A44D40EB59DB54CFAD14CDB1C7B3C5890AAD3399685714815CD50FCA4BB11FDC372266B36E54CA9E3304669BAD00ABD96FC64EE3647B01567E3A1E6E96410AEE56CCEC96813A18E6298DB922B39BD268F643EA55854759D3E4258E858A148850C94ED244FB441363AA8E5C63D5ACAB65E0E4D8694CA9E937B038D1A8A733DD8C6CBD08B54BE9EC66822F0F60E8BD1DCA7676E7504B9AD2E24DD5704BB6AE85C3856942E26859B61E9A65BEAD322335D6C24B85233AF6233DEBB1276E8C7F65409C6649197BC642C0EFB8384161D991ECBC719BD594633833B761A51085352B424BAC28D05E81096BA5F099383558DACF506E7742CDCD44CBED5C97896A5CB84A27476CA8162ED2E2BA439F8FDB1BD61C928492DF5301C21637118D1E440DBF86553CCE2BA19068D4D8722E6164701A1A2635D9559DF3F2C969A4EF436CCB1988DC57A8A4A053DC876F971C6F2FA523890D329C957C561DC0D57FE215CE4060519368D8798EE2518A3F5269A64D8F5401A53EC9800479D526D349558933DAC94E4D8671ADFB06AAA581EFAC83226D7CA6837CCCC85ADB9EAC161A669CE65BE25307989B31304AD99F9C128E46C0C0CBC5AD49DB9AC2692EF6D317D4BA659126E86EBDC1C10288376968E00BA2A86BB60BF24109FE5772336ACA6A394476C73B9F06A720BEBC17A34B90C90D4EB6CB422F3D55D23F3A1B792EB21151F165CDE27821E50B6B6688D76CAAEB71EB906B261E952DCEDB8D46B908DDD6FBCC4F5EA1D5D88A8A3A79B239317446F68559918E3B3D026F955B29AF04CB6752A0CD42C6A551B7E482778B99CFAD2CE75ED8E75108D714506FA449A8ABBAD52D9DD01DF5F5A4A1DA0BB90ED8BE934751859C49C6207967A31176DEB48ED87FBFD86E8E414D1B7D78740E0D96630F64BE1B05395A9614DCC5A254A3BF0278BF500D7340D05E1C4AA4C859A16E3753536B74C26B1693076D6422FEDE7A98E6273341EEA3B4776BA33746D55B29F53EE70B50CFD644FF1D9FEC04D4A2C0BD79AAECF3743788690BB13BAB392722DE70A936486F288B796DC6C9C6EABA41F6FF1B2386CB9515518AB6812CFF8BDC9017C20AF02B133939B001BF482BC33E92BA2B7CF040ACBA607CE4167FBA3CA971B629553232F880C95AC930E84C474F7D9945DA5B6B02C3DD021715919CEC653359EE9ABCE7CEA4E9918E52A7259459680850BC4CAE7E441180DF94EDD53139DC38B2491EA213B43A50DCF80DE0EF0DA6E5C15730531CB9A99C844EE1C1C6AB440B36C4BF50C618484D26212A2BD80DA370BAD287A805CC97889025B8E8FE4D1E86D6DA7F49A23D3EC8D0DEB28B84B4ED7EA74B648E7804D5C1BA1BD54DDD5866C2CE26DD3A58EE3BD1E11D13A61C67B734A399463D2D3E386233A7BDEE9739D95B98CA40103463E2FF4FC55218F24C3A439B7E297C8481C0B753EE50C22AE7B2C3276B5A3E9F4FDFDB4EFF3D401507310EC32A5BFC391C9FE58E43E1F5A132998D8D202539962C8174D4F195583AA6019678A98996676307F5475B1C1A108C0382F022C9F676E63BA6E545B52E8773476EAD2E45E2EA61D9D1E486CE3AF3B89417B3C68C20599769B3E1E905D6DD84C72E2C046C898D8EE26865E258115CA8D339D05FA1A9DC3357F6F756707CA5F790245967A18CFE102566AD3A032147CA9AF9D8047B1C06083DD32C4FBEB86807604B65057DE825E1E370AAE181BB1743633DFD808ED3EC25ADD01DAFA907DC61314B8C74CE01EE2739E004E9F3B92DFEFF0A8585A911CC09F86A38536B6C263E40EEE2B854311284713DE0ADA51F0D978D8A3EA56F6906B35E6317960B32BB837E1D01E579DF50C7537647096D73C3ADBD95DED940B8FEE026B6A040E1BF8BA824FACB0DDC782C238E21B733D20AD484CE4F5C0B7BA7262857647F24E189DB038E5FCBC47AE4E315003E6BE2C573D0D380F389DE4828253FA460CCE3971C6BAEE1A1B39D1BB4C0EB1CB0CEA97C516A93762438C8CAED6B4F839EB01C48929956EB0B7B10C3B6116A0D73EDECC5F84FBF924B3BA76B9622711AC9B778AD5D6E672ECF5F9606987F8DE598B810D7689C66A7D6722C6FA6656ED0181F1B01F0455F00E2A570934910B3E512F28F2C18E22A7702C6653E44203A43D6726D31553E54EA81DED6E505A4195CC159C6ECF14B046A5B597E1BFAB58A6E3A340337D815ED6A2CF6002BD4217545609C0AE04CA4E202F4B83F93C5BC8B967AE47BBA3B1D6E790C77DCA27DA7C1F7F3CD15F6142B3F20C40CC9FE42A375850E7CF14597044FC685F0B8DD7E5CE761CDBF7AEFCC11E79F46B5DF95BF616CA3BFE54BBF7B63F38A7B6F7DEF4B7EA8957FE12783E9B2416AB1D1F7A454CDC10F62B852B5617879CD11FFA0D853C0CC7DEA9CEB04795D5D25B37555FF7756CB19EF90B7A35101A712F8610579519E85D6D27AE277B233480E1337D83EE8F172CD715D500E88D07D704A1316863B7A0997A0179A2ABDACE608D500FF57AC12E3B1B15F633D0CE9C401F3933B77BF2CE8EE43EAC7F48F94C0F623A9F29DA4445F539F1FFAF5FEBF503BC50BFBC34B477EC8B8BCA5B7F403BFF89EC0E79EBFFB0DCFFE5C70FFF85FEF8E13FD11F7FF71F7FF9E6EBAFBEFEFA9B7F65FF07FDF8E1F7FFF2E7E99FFFFBE3575FFDE177FF80FEDBBF637F407FFFE19BD53F7EF8E3D79C8AFD13FAC7F6E1E3B71FBFFD5FC394AB391B230000, 8987)
+GO
+INSERT [dbo].[FattureContenuto] ([IdFattura], [Contenuto], [Dimensione]) VALUES (47, 0x1F8B0800000000000400ED5A498FE3587276777B0A981ED469E07BA27DB35049523B1BD90973134589A42892A2445E06DC443D8A9BB88B3737E0B9FB1FCCD507FF3EC3373F2A9599522EDDD5536EF40C6009992546C48B88F7C5176F51D65DF2FDC4CCF3223599C0CDF3348E806DDE946E9A8138727FF86E221158F7BB9B3A0CA2EC7B27FBE1BB5D9E27DF23485555B755EF364E3DA48BA22882E208B47132E0FDF3A3759D8177CC316423F08ABD7343F31388B2DC8C6C178ECAC0F7D949C8C7B699C3F84FC34169666E5A8206DC9A9E1B35C074A33C3573F7D68BCB5B90234E6C67489D39C8F634191729B1DBEECDC38319A70E88CC14987F6AA5B7D0EC31C5E40B237C77FFF1DB9B9BBBD7084E5DD371D39316EA69381B3535B310642758CF72A8E19C07799EC370CFF2934632DDCCBDE7D43BE4F1F3959A8A1D60BBF7499A67598E757BC38189F7FBFBD6FAAC7A8A82BC13E64E4A632F75615265CC452588EFD13BE495ECC97A12A7A199C7573339F1E30E794BF534EE211DDACD7258861C1622BE5F4D18AD4FDD216FA8CE9821EF807647B94E3B0909E698C390E945A0760811995E6A6E810DAEE19A80CC360397D3880BF9CFE27C8934C4B83F18C2DFBD37307E40F9CD20E7F99F756DC160ADC6B889E1E7825DEB2F063ECDC5BC4E8976A338848035275C084A606E149987905DC92F537BD3D39DEC7A207C0A2C4F50EC0EB9963D53E81D6CEF14588E2BA42307A4A069E27B27846F88CA93E0121242BA1F0DE11BCE1E7EBC022B2C60F2E4825FB022D182737ABEB080042D416403F39E604F743D3F5D98886708DAA28A2FE0B8432E5286FEDFA113E4D989772D27610EAF7BE7D725DBE8F9F5456CBBF2F38544A302D0427093149615003BBEE9FE42CAFD352C2A817993C01A9BDD9FA0521FC550F43D2A5971107B91F9D3542217FF17547A97317085FCA93DE28D1D848C9DE3E5FEC1BA919B9A01B826E0A3948EED2284D1AE905141123F2B54BA6DEF6BD985310D4A9099F7CC4A86557AF87CA9858BF37D17C5469F30EC530F3D15F21A26E8318DEF6191CE9F2E8B1926710A37873887B47B0E8EA123F4763080657D5B7FCD9AF7677A02828A4FDBF5F59C38E7D9BACBB42DF3F6D4DBB960388A7E42B14F2D4857937B08FFD2FF7552978522DD08280F47898B14615D4D2F00310F22D77D0D5C2B86393CA2F7F0F8AAA98934876D17C4D74DFAA06B0B7B2F31B2B210099E79ECF593F40D6BCD0CDAA50E9EDCD03EF6687C165E36F1BB71E18C321BF6E2A91F0460A771B67553179E1C217F6FBCF4F6069EF36E7A6D575E5A5E38581666948316F9EEE0B6B57B125C18AD22281040067BE37EEFDD2197CF2F2AC8456D0CC985DDE7C4AFCA79AD7D317402E17E6FE0A5EE6AE570E13A744AA73DB4F44E3378217C65FEC0F0FBDE6870617E165EAEC601381450DA2EECDDEEC9F4527441CCB759F5996CEBFE266C1B7D31DBD8134F6E4074E3C155D6BCB1E3E82634E19A19C3F6FC79BA7D1ED992E66F986CC3DBDEE7B30D1B63B783DF9E6DBDDF846DE32F66DBCA7383206ED9560107983FCFAFEEDF3DBFB0C1E8172D6758FF6F6139EBFF2604C3BF98604A026F01370E5CD042CB3C532D70BDE8339632ECEF9E6ABF8868A35F9966F0F026033701F0BA10FF159ECF27DD0858005ECA1ECEB4F7E3D1E8B4FABED6BC18969DCEA0F01C713E1067D7056532E0B5C3C1434CE50E7921B93EAEBE9CC783F4F5D1F43469C9F4CC17476A78DC754EC4BB50AA12DA6D49FD5AF3BA535FEBA056881DB34DF7592948ED745FCB5FF04C06F06C094E2AD54DE175F322F6CB4BC94FD95EB865419C46E095C5107A7947F5FA42F3ACBBACF295E27250069BB4C863D81866FBFD62CBF4F6C609B794B75497234942BC4731BCDBBEA175FBF8069D5F467DA8F92B2911C0D5052A9E5D8871E812D089BD6B0DEFB1FEA887FFA907B7CE178AA701E76FFB2E54123D79FA12F0AD1117B299463232406BDE5FCE672EEF37B830178E44C5B13830BD782C51B860AC0791C37A9EA0120391C259735DA3C6862BE5B0DE39ACC6186BB134D855478A44D40EB59DB54CFAD14CDB1C7B3C5890AAD3399685714815CD50FCA4BB11FDC372266B36E54CA9E3304669BAD00ABD96FC64EE3647B01567E3A1E6E96410AEE56CCEC96813A18E6298DB922B39BD268F643EA55854759D3E4258E858A148850C94ED244FB441363AA8E5C63D5ACAB65E0E4D8694CA9E937B038D1A8A733DD8C6CBD08B54BE9EC66822F0F60E8BD1DCA7676E7504B9AD2E24DD5704BB6AE85C3856942E26859B61E9A65BEAD322335D6C24B85233AF6233DEBB1276E8C7F65409C6649197BC642C0EFB8384161D991ECBC719BD594633833B761A51085352B424BAC28D05E81096BA5F099383558DACF506E7742CDCD44CBED5C97896A5CB84A27476CA8162ED2E2BA439F8FDB1BD61C928492DF5301C21637118D1E440DBF86553CCE2BA19068D4D8722E6164701A1A2635D9559DF3F2C969A4EF436CCB1988DC57A8A4A053DC876F971C6F2FA523890D329C957C561DC0D57FE215CE4060519368D8798EE2518A3F5269A64D8F5401A53EC9800479D526D349558933DAC94E4D8671ADFB06AAA581EFAC83226D7CA6837CCCC85ADB9EAC161A669CE65BE25307989B31304AD99F9C128E46C0C0CBC5AD49DB9AC2692EF6D317D4BA659126E86EBDC1C10288376968E00BA2A86BB60BF24109FE5772336ACA6A394476C73B9F06A720BEBC17A34B90C90D4EB6CB422F3D55D23F3A1B792EB21151F165CDE27821E50B6B6688D76CAAEB71EB906B261E952DCEDB8D46B908DDD6FBCC4F5EA1D5D88A8A3A79B239317446F68559918E3B3D026F955B29AF04CB6752A0CD42C6A551B7E482778B99CFAD2CE75ED8E75108D714506FA449A8ABBAD52D9DD01DF5F5A4A1DA0BB90ED8BE934751859C49C6207967A31176DEB48ED87FBFD86E8E414D1B7D78740E0D96630F64BE1B05395A9614DCC5A254A3BF0278BF500D7340D05E1C4AA4C859A16E3753536B74C26B1693076D6422FEDE7A98E6273341EEA3B4776BA33746D55B29F53EE70B50CFD644FF1D9FEC04D4A2C0BD79AAECF3743788690BB13BAB392722DE70A936486F288B796DC6C9C6EABA41F6FF1B2386CB9515518AB6812CFF8BDC9017C20AF02B133939B001BF482BC33E92BA2B7CF040ACBA607CE4167FBA3CA971B629553232F880C95AC930E84C474F7D9945DA5B6B02C3DD021715919CEC653359EE9ABCE7CEA4E9918E52A7259459680850BC4CAE7E441180DF94EDD53139DC38B2491EA213B43A50DCF80DE0EF0DA6E5C15730531CB9A99C844EE1C1C6AB440B36C4BF50C618484D26212A2BD80DA370BAD287A805CC97889025B8E8FE4D1E86D6DA7F49A23D3EC8D0DEB28B84B4ED7EA74B648E7804D5C1BA1BD54DDD5866C2CE26DD3A58EE3BD1E11D13A61C67B734A399463D2D3E386233A7BDEE9739D95B98CA40103463E2FF4FC55218F24C3A439B7E297C8481C0B753EE50C22AE7B2C3276B5A3E9F4FDFDB4EFF3D401507310EC32A5BFC391C9FE58E43E1F5A132998D8D202539962C8174D4F195583AA6019678A98996676307F5475B1C1A108C0382F022C9F676E63BA6E545B52E8773476EAD2E45E2EA61D9D1E486CE3AF3B89417B3C68C20599769B3E1E905D6DD84C72E2C046C898D8EE26865E258115CA8D339D05FA1A9DC3357F6F756707CA5F790245967A18CFE102566AD3A032147CA9AF9D8047B1C06083DD32C4FBEB86807604B65057DE825E1E370AAE181BB1743633DFD808ED3EC25ADD01DAFA907DC61314B8C74CE01EE2739E004E9F3B92DFEFF0A8585A911CC09F86A38536B6C263E40EEE2B854311284713DE0ADA51F0D978D8A3EA56F6906B35E6317960B32BB837E1D01E579DF50C7537647096D73C3ADBD95DED940B8FEE026B6A040E1BF8BA824FACB0DDC782C238E21B733D20AD484CE4F5C0B7BA7262857647F24E189DB038E5FCBC47AE4E315003E6BE2C573D0D380F389DE4828253FA460CCE3971C6BAEE1A1B39D1BB4C0EB1CB0CEA97C516A93762438C8CAED6B4F839EB01C48929956EB0B7B10C3B6116A0D73EDECC5F84FBF924B3BA76B9622711AC9B778AD5D6E672ECF5F9606987F8DE598B810D7689C66A7D6722C6FA6656ED0181F1B01F0455F00E2A570934910B3E512F28F2C18E22A7702C6653E44203A43D6726D31553E54EA81DED6E505A4195CC159C6ECF14B046A5B597E1BFAB58A6E3A340337D815ED6A2CF6002BD4217545609C0AE04CA4E202F4B83F93C5BC8B967AE47BBA3B1D6E790C77DCA27DA7C1F7F3CD15F6142B3F20C40CC9FE42A375850E7CF14597044FC685F0B8DD7E5CE761CDBF7AEFCC11E79F46B5DF95BF616CA3BFE54BBF7B63F38A7B6F7DEF4B7EA8957FE12783E9B2416AB1D1F7A454CDC10F62B852B5617879CD11FFA0D853C0CC7DEA9CEB04795D5D25B37555FF7756CB19EF90B7A35101A712F8610579519E85D6D27AE277B233480E1337D83EE8F172CD715D500E88D07D704A1316863B7A0997A0179A2ABDACE608D500FF57AC12E3B1B15F633D0CE9C401F3933B77BF2CE8EE43EAC7F48F94C0F623A9F29DA4445F539F1FFAF5FEBF503BC50BFBC34B477EC8B8BCA5B7F403BFF89EC0E79EBFFB0DCFFE5C70FFF85FEF8E13FD11F7FF71F7FF9E6EBAFBEFEFA9B7F65FF07FDF8E1F7FFF2E7E99FFFFBE3575FFDE177FF80FEDBBF637F407FFFE19BD53F7EF8E3D79C8AFD13FAC7F6E1E3B71FBFFD5FC394AB391B230000, 8987)
+GO
+INSERT [dbo].[FattureContenuto] ([IdFattura], [Contenuto], [Dimensione]) VALUES (50, 0x1F8B0800000000000400ED5A596FEAD8B27E3FD2F90F51DF47D4F1C0E8563A92278CC136C63606FBE5C81366194F78C6BFFE2E034920213D9C7D5B7D8E7441C9C655B5AA6A7DF5D51AC87E497F995A455166161B7A4591253170ACA7CACB7290C4DEAF3F4D6505C37F7A6AA230CE7F71F35F7FDA1745FA0B82D475FD5CF79F93CC47701445119440A08D9B03FF7FDEAC9B1C7C638E215B51509DBD17593F83382FACD8F1E0A81CFC929F8542E258058CFF3E1C5456EE651568C1B3E57B710B2C2F2E32ABF09EFDA47A0605E2264E8E34B98BECCE93F1900A7BC69F2E0F5692B920B63260FDAB933E43B3B714D31F8CF0D3EB3FFFF1F4F4F215C19967B95E76D6423D0367A365561E81FC0CEB550E35BC7B9117050CF7213F6B64CBCBBD575E7B41DE3EDFA9E9C4058EF79A66459E1718DE1F0D2D62303874D657D57B14E49B302F7296F8990793AA123EAE40F28ABE205F64EFD6D3248BAC22B99BC9991F2FC823D5FBB84B3A8C9717B00C052C44F2BA9EB2FA807E411EA8AE9821DF80F6427B6E370919E658C090D94DA06E08195B7E66ED8003EEE19A82DCB1428FD7C91BF9EFE27C8B34C478301CC1DFFD07185F507E18E43AFFABAE2B18ACD584B030E25AB07BFDCDC0F7B958F729315E9C4410B0F68C0B498BEC93AA0810B23BF96D6A0F3DBD289E0FA2F7C0CA14C55E907BD90785BEC1F64585E5B8433A764106DA36797523F886A8BC0B6E2121E5D7F108BEE1ECE1C73BB0A212264F2D852527911D38E7E71B0B48D00AC40EB05E49EE4CD7EBD38D897485A02BAAF4098E17E42665E8FF1B3A419E9D79D77112E6F0B577FE5AB28D3F5E3FC4B63B3F3F48343A041D044F6969DB21709227FC4F52EEDF615105ACA714D6D8C27F834A031443D1EFA8642761E2C7D66F53895AFE5F50E95BC6C015F2B7F688073B0895B8A7DBFD83F3622FB342704FC0372993386504A3DD21A38134F950684CD7DEF7B21B63065420B75ED9B502AB74F97CAB858BF32B8E62E39F31ECE73E7A2EE43D4CD06396BCC2225D3FDD16334A930C6E0E490169F7111C43C7E8F37008CBFA587FCF9AEF677A06824ECEDBF5FD9C78F7C31A67BB96793CF56E2E1881A23FA3D8CF1D487793BB84FFECFF3EA9DB42515E0CD4CB51E226455857CB0F412280D8F3BE02D789610E6FE85D1EBF34359915B0EDC2E4BE492FBAAEB0AF32ABA84B8914D8B75E3F4B1F58EB56D82D75F0E4860EB037E3ABF0B689BF8D0B67943BB017CFFD2002274BF29D9779F0E408F9FBE467CF4FF09CF7D4EFBAF2D6F2C6C1AAB4E20274C8E3C3E7CEEE5D7063B48EA1400439EC8DD783FF82DC3E7FAA201F7731640F769F9B7C29E7BDF6D3D02984FBBB81B7BABB95C383EBD0399DEED0D23FCFE093F08BF985E1AFFDF1F0C6FC2ABC5D8D43702CA1B45BD871FC6C7A2BBA21E66356FD41B6E17F0BDBC63FCC36EECC9327103FF97095B59E9C247E8A2CB86626B03D7F9F6E7F8C6C69FB1F4CB6D173FF8FB30D9B60CFC3BF9F6DFDBF856D931F66DBDAF7C230E9D856031758BFCF2FFCBF9E5FD870FCA796336CF09FB09C0DFE1682113F4C303585B78027172E68916D5DA9167A7EFC079632ECBF9E6A7F8A68E3BF9866F0F0A6002F05F0BA90FC1B9EAF27DD18D8005ECA2E67DAD7C9787C5E7DBF6A3E0DCBCF6750788EB81E88F3FB82B239F0BBE1E012537D413E49EE8FAB9FE771917E3D9A9E272D5BBEF5E9480D8FBBEE9978374A4D46F18ED45F355F3BF5AB0E6AC5C4B5BA743F94A2DC4DF7ABFC13CF1400CF96E0ACD2BC0C5E376F627FBE94FC96ED8D5B0E24590CBE588CA0976F545F2F341FBADB2ADF296E07E5B049CB22818D6175DF2F764CEF6E9C704B79A4BA1D4991D22B8A1178F786D6DDE3033A7F8E7AA9F9172919C2D5052A3E5C4849E491D089B3EF0C5FB1C1B84FFCAB0FB7CE4F8AF701D76FFB6E5432337DFF12F0D1881BD95CA75805A08D10AC16734F085A425C8827B2E63902587E329169423437C3D8E57C5FD4C8A144139CB5695073CB574AD4EC5D4E67CD8D5499DCBA27C712EA44FADE5EA58378AE6F4F7D012C29CDED9DAAD23C66AA6EAA418A6FA5E0B89A2BBA43BB33FA344A508629F5D268E4205D78ED09ECA4F964A4FB0615461B255FF00ADAC6A8AB9AD6AEE22BDE68A81355CC680ED53C778090363A51694AA54275372D527D988F8F5AB5F54EB6BA6B56238BA5E4AAEF16FE50A747D2C20877C92AF2634D6866099A8A82B3C712B40898B9579F40E1684BD90854D1A95BA6104F356D4869E9E558B6C52B6356E696878D454F6E17756225074FC68E83C499A9E1842A8B4A90CDE5F17094D1B2A73013E53467B6AB786EF2A75E2B89514649B6CCD484B9043DD2D60E6B717AB4EBB1BDD912BC8145DB862D760695CCF36C95D2B4C1CD78506EBC558DB4C7603071B61C15A799AD1D476364228D62861AEADBA06ACB79D2B4A3B0759848C2BCF22422747C6AEA2A1F04C7E54A37C8FE963D95F389D4CC50B96486F9BE38CD39C15889476A36A384BA3C4EF0681D1CA36561D29061B36484197E8AB17A7FAACBA6D30CE509CD4D48703268CD413399B3B8E35A4D4F03B60D4CBBA1CBD57180AC126AA38EF7A3DC5A3ABAA71D5D7696157C1ED8225B54043745D0865D1CCD52C927C024EA65D35B285A2A07FE0E33765496A7D176B429AC2189B2686FE58A00D730C203871589049CB01F73513D1B6702E258ABA5DF503B580FCE67A85588647E6FAB9779A0ED5B4588FCB5D28CE8E4B8E48B0119F681BA73247BBC57F7FDCDD833912DC754D27ECF677E8B6C9D41EBA79EDFEC9952425D23DB9ED8A224FB23BBCEA58498470E25ACD3F55460F39D5B63A0E150BBDE0A232625AAD52C90F79EE7F4ECA3644E6A2A34A6F24CDAEFD4DAC187C26065AB4D88EE236E2065B3CC65150973CB3D5819E54272EC137D181D0E5BB257D0E4C0D91C4351E0DAE124A8C4E35E5367A63DB51A8DAC9C30982E374342D775144453BBB6547A564E36F5C4DAB1B9CC65E1C4DD88FD6C5064068A2DD06464EC5DC5C5E7E8C6AE95A0A0BDD17A1505E98116F2C3919F56581E6D74C3586C47F00CA1E053A6B7960BBDE04B8B6247CA58B057FC7C92EDEA7490EC88AA3CEEF8715D9AEB789ACC8583C50362A8AC43A93757DA101BF6C3A2371DA8927FC8451ACB6747DE45E7879326545B725DD0633F8C4D8D6AD21E84C4F20EF98C5B678EB8AA7CD0A308451DCD27332D991BEBDE62E6CDD804E56B6A55C7B688454BC42E16D4511C8F845ED3D7528327CA34959B113747E5ADC082FE1E08FA7E52970B15B1AA869D2A64E11E5D7ABC44F37C47F74D718C44F2721AA1FD903EB44BBD2CFB805A2B44850247494ED4C9ECEF1CB7F2DB13DB1ECC2DE7AA8447CD36DA6CBECC16804B3D0761FC4CDB37A6622E935D8BD3A7C9C188C97893B2938335A35DDAB598D969CB93BD83E00EF8DEDA5AC5F29005E34010FBC1BA54C6B26931BC570B2B642C4DC4A698F12699347D0E9978FAC97207C161360804FA08E80508F7B93AD813C8F4702A8B4088ECA91C4E1D7989696C3912CAB6AF8EEB615D72AC3B43AC5CB77A5830AE716C782C433029CA102B16B9D75A9E1737B61C053D9D9B790C7550CA59CF608632D7069B5E6A32BE00DA684965783B20420AD747EDB4208F5C8C4CC8DD7E6A1A751ADA91D2BAB379686CD0055CF30F363E3FD2C1DA1769AA32A2640117B04A9F85B5A9122B63E386028A852617EE571131D8B424B423B1A5B6F697CCEAB45509D5DC4A95BB9D07E656ECF611CEC68768E74309585F54E11E33857B48C0FB22387FEEC9C1A027A05265C74A087F5A9E11BBD8AA80517BB8AF942E4DA23C43FA6B6847C367F3B247359DEC926B3D113065E8706BB83711D09ED0DCCD1CF5B654789537023ADF3BB87ECE4540F7A13D3343970B034325A676D4ED6361699E88ADB51952762CA5CA6618D8B892DA91D393FD3346672CCE397FEC91EB730CD484B9AFAA755F07EE05A7B35C5409DAD84AE13527DEDC34B8B9555203670B885D6ED27F2EB6443F880D313271BDEDF073374388135BA9787870B01C3B6316A2F73E1EE62FC1FD7C9ADBB853ADB9690CEBE69F6375B5B91D7B7F3E58391171703752E8807DAA73FAC09D4A89B19DD707406202EC075113FDA3C6D72243166240364B9ABAD8D1D40C8EC51C9A5AEA807216EC74B666EBC28DF4938387951DD6E9422598EE4C016B54D90705FEBB4E142639890C3B10995523052C26326B7449E7B5089C5AA49D14F2B232D93F660B39F7C1F5787F3237C602F27840076497EFDB8F2F056B4C6CD7BE09C8C5BB5CE3874BFAFA99A64A9E4CDEEC1BB1F571FE6AC77303FFCE1FEC9137BFF69DBF557FA97EE34F73FA8FFDC13975BDF7D0DFBA2FDDF94BE1F96C9ADA9C7EBAF48A947A11EC579A506D9C809C312EFD86421E4613FF5C67D8A3EA7AE56FDA7A600406B6DCCC8325B31E8AAD74902288ABC60E0D5CDF4B9BE9C18C4C6006ECC064069325C7E3921602A3F5E19A20B62663EE970CDB2C214F0C4DDF9B9C191991D12CB9556FABC17E06FA9513E81B67164E5FD93BB13280F58FE880ED434C1773559F6AA8B120FFFFF557BD7E8517EACF9786EE8E7D735179F407B4EB9FC85E9047FF87052AFEF98FFF05757CA189DE220000, 8926)
+GO
+INSERT [dbo].[FattureContenuto] ([IdFattura], [Contenuto], [Dimensione]) VALUES (53, 0x1F8B0800000000000400ED5A596FEAD8B27E3FD2F90F51DF47D4F1C0E8563A92278CC136C63606FBE5C81366194F78C6BFFE2E034920213D9C7D5B7D8E7441C9C655B5AA6A7DF5D51AC87E497F995A455166161B7A4591253170ACA7CACB7290C4DEAF3F4D6505C37F7A6AA230CE7F71F35F7FDA1745FA0B82D475FD5CF79F93CC47701445119440A08D9B03FF7FDEAC9B1C7C638E215B51509DBD17593F83382FACD8F1E0A81CFC929F8542E258058CFF3E1C5456EE651568C1B3E57B710B2C2F2E32ABF09EFDA47A0605E2264E8E34B98BECCE93F1900A7BC69F2E0F5692B920B63260FDAB933E43B3B714D31F8CF0D3EB3FFFF1F4F4F215C19967B95E76D6423D0367A365561E81FC0CEB550E35BC7B9117050CF7213F6B64CBCBBD575E7B41DE3EDFA9E9C4058EF79A66459E1718DE1F0D2D62303874D657D57B14E49B302F7296F8990793AA123EAE40F28ABE205F64EFD6D3248BAC22B99BC9991F2FC823D5FBB84B3A8C9717B00C052C44F2BA9EB2FA807E411EA8AE9821DF80F6427B6E370919E658C090D94DA06E08195B7E66ED8003EEE19A82DCB1428FD7C91BF9EFE27C8B34C478301CC1DFFD07185F507E18E43AFFABAE2B18ACD584B030E25AB07BFDCDC0F7B958F729315E9C4410B0F68C0B498BEC93AA0810B23BF96D6A0F3DBD289E0FA2F7C0CA14C55E907BD90785BEC1F64585E5B8433A764106DA36797523F886A8BC0B6E2121E5D7F108BEE1ECE1C73BB0A212264F2D852527911D38E7E71B0B48D00AC40EB05E49EE4CD7EBD38D897485A02BAAF4098E17E42665E8FF1B3A419E9D79D77112E6F0B577FE5AB28D3F5E3FC4B63B3F3F48343A041D044F6969DB21709227FC4F52EEDF615105ACA714D6D8C27F834A031443D1EFA8642761E2C7D66F53895AFE5F50E95BC6C015F2B7F688073B0895B8A7DBFD83F3622FB342704FC0372993386504A3DD21A38134F950684CD7DEF7B21B63065420B75ED9B502AB74F97CAB858BF32B8E62E39F31ECE73E7A2EE43D4CD06396BCC2225D3FDD16334A930C6E0E490169F7111C43C7E8F37008CBFA587FCF9AEF677A06824ECEDBF5FD9C78F7C31A67BB96793CF56E2E1881A23FA3D8CF1D487793BB84FFECFF3EA9DB42515E0CD4CB51E226455857CB0F412280D8F3BE02D789610E6FE85D1EBF34359915B0EDC2E4BE492FBAAEB0AF32ABA84B8914D8B75E3F4B1F58EB56D82D75F0E4860EB037E3ABF0B689BF8D0B67943BB017CFFD2002274BF29D9779F0E408F9FBE467CF4FF09CF7D4EFBAF2D6F2C6C1AAB4E20274C8E3C3E7CEEE5D7063B48EA1400439EC8DD783FF82DC3E7FAA201F7731640F769F9B7C29E7BDF6D3D02984FBBB81B7BABB95C383EBD0399DEED0D23FCFE093F08BF985E1AFFDF1F0C6FC2ABC5D8D43702CA1B45BD871FC6C7A2BBA21E66356FD41B6E17F0BDBC63FCC36EECC9327103FF97095B59E9C247E8A2CB86626B03D7F9F6E7F8C6C69FB1F4CB6D173FF8FB30D9B60CFC3BF9F6DFDBF856D931F66DBDAF7C230E9D856031758BFCF2FFCBF9E5FD870FCA796336CF09FB09C0DFE1682113F4C303585B78027172E68916D5DA9167A7EFC079632ECBF9E6A7F8A68E3BF9866F0F0A6002F05F0BA90FC1B9EAF27DD18D8005ECA2E67DAD7C9787C5E7DBF6A3E0DCBCF6750788EB81E88F3FB82B239F0BBE1E012537D413E49EE8FAB9FE771917E3D9A9E272D5BBEF5E9480D8FBBEE9978374A4D46F18ED45F355F3BF5AB0E6AC5C4B5BA743F94A2DC4DF7ABFC13CF1400CF96E0ACD2BC0C5E376F627FBE94FC96ED8D5B0E24590CBE588CA0976F545F2F341FBADB2ADF296E07E5B049CB22818D6175DF2F764CEF6E9C704B79A4BA1D4991D22B8A1178F786D6DDE3033A7F8E7AA9F9172919C2D5052A3E5C4849E491D089B3EF0C5FB1C1B84FFCAB0FB7CE4F8AF701D76FFB6E5432337DFF12F0D1881BD95CA75805A08D10AC16734F085A425C8827B2E63902587E329169423437C3D8E57C5FD4C8A144139CB5695073CB574AD4EC5D4E67CD8D5499DCBA27C712EA44FADE5EA58378AE6F4F7D012C29CDED9DAAD23C66AA6EAA418A6FA5E0B89A2BBA43BB33FA344A508629F5D268E4205D78ED09ECA4F964A4FB0615461B255FF00ADAC6A8AB9AD6AEE22BDE68A81355CC680ED53C778090363A51694AA54275372D527D988F8F5AB5F54EB6BA6B56238BA5E4AAEF16FE50A747D2C20877C92AF2634D6866099A8A82B3C712B40898B9579F40E1684BD90854D1A95BA6104F356D4869E9E558B6C52B6356E696878D454F6E17756225074FC68E83C499A9E1842A8B4A90CDE5F17094D1B2A73013E53467B6AB786EF2A75E2B89514649B6CCD484B9043DD2D60E6B717AB4EBB1BDD912BC8145DB862D760695CCF36C95D2B4C1CD78506EBC558DB4C7603071B61C15A799AD1D476364228D62861AEADBA06ACB79D2B4A3B0759848C2BCF22422747C6AEA2A1F04C7E54A37C8FE963D95F389D4CC50B96486F9BE38CD39C15889476A36A384BA3C4EF0681D1CA36561D29061B36484197E8AB17A7FAACBA6D30CE509CD4D48703268CD413399B3B8E35A4D4F03B60D4CBBA1CBD57180AC126AA38EF7A3DC5A3ABAA71D5D7696157C1ED8225B54043745D0865D1CCD52C927C024EA65D35B285A2A07FE0E33765496A7D176B429AC2189B2686FE58A00D730C203871589049CB01F73513D1B6702E258ABA5DF503B580FCE67A85588647E6FAB9779A0ED5B4588FCB5D28CE8E4B8E48B0119F681BA73247BBC57F7FDCDD833912DC754D27ECF677E8B6C9D41EBA79EDFEC9952425D23DB9ED8A224FB23BBCEA58498470E25ACD3F55460F39D5B63A0E150BBDE0A232625AAD52C90F79EE7F4ECA3644E6A2A34A6F24CDAEFD4DAC187C26065AB4D88EE236E2065B3CC65150973CB3D5819E54272EC137D181D0E5BB257D0E4C0D91C4351E0DAE124A8C4E35E5367A63DB51A8DAC9C30982E374342D775144453BBB6547A564E36F5C4DAB1B9CC65E1C4DD88FD6C5064068A2DD06464EC5DC5C5E7E8C6AE95A0A0BDD17A1505E98116F2C3919F56581E6D74C3586C47F00CA1E053A6B7960BBDE04B8B6247CA58B057FC7C92EDEA7490EC88AA3CEEF8715D9AEB789ACC8583C50362A8AC43A93757DA101BF6C3A2371DA8927FC8451ACB6747DE45E7879326545B725DD0633F8C4D8D6AD21E84C4F20EF98C5B678EB8AA7CD0A308451DCD27332D991BEBDE62E6CDD804E56B6A55C7B688454BC42E16D4511C8F845ED3D7528327CA34959B113747E5ADC082FE1E08FA7E52970B15B1AA869D2A64E11E5D7ABC44F37C47F74D718C44F2721AA1FD903EB44BBD2CFB805A2B44850247494ED4C9ECEF1CB7F2DB13DB1ECC2DE7AA8447CD36DA6CBECC16804B3D0761FC4CDB37A6622E935D8BD3A7C9C188C97893B2938335A35DDAB598D969CB93BD83E00EF8DEDA5AC5F29005E34010FBC1BA54C6B26931BC570B2B642C4DC4A698F12699347D0E9978FAC97207C161360804FA08E80508F7B93AD813C8F4702A8B4088ECA91C4E1D7989696C3912CAB6AF8EEB615D72AC3B43AC5CB77A5830AE716C782C433029CA102B16B9D75A9E1737B61C053D9D9B790C7550CA59CF608632D7069B5E6A32BE00DA684965783B20420AD747EDB4208F5C8C4CC8DD7E6A1A751ADA91D2BAB379686CD0055CF30F363E3FD2C1DA1769AA32A2640117B04A9F85B5A9122B63E386028A852617EE571131D8B424B423B1A5B6F697CCEAB45509D5DC4A95BB9D07E656ECF611CEC68768E74309585F54E11E33857B48C0FB22387FEEC9C1A027A05265C74A087F5A9E11BBD8AA80517BB8AF942E4DA23C43FA6B6847C367F3B247359DEC926B3D113065E8706BB83711D09ED0DCCD1CF5B654789537023ADF3BB87ECE4540F7A13D3343970B034325A676D4ED6361699E88ADB51952762CA5CA6618D8B892DA91D393FD3346672CCE397FEC91EB730CD484B9AFAA755F07EE05A7B35C5409DAD84AE13527DEDC34B8B9555203670B885D6ED27F2EB6443F880D313271BDEDF073374388135BA9787870B01C3B6316A2F73E1EE62FC1FD7C9ADBB853ADB9690CEBE69F6375B5B91D7B7F3E58391171703752E8807DAA73FAC09D4A89B19DD707406202EC075113FDA3C6D72243166240364B9ABAD8D1D40C8EC51C9A5AEA807216EC74B666EBC28DF4938387951DD6E9422598EE4C016B54D90705FEBB4E142639890C3B10995523052C26326B7449E7B5089C5AA49D14F2B232D93F660B39F7C1F5787F3237C602F27840076497EFDB8F2F056B4C6CD7BE09C8C5BB5CE3874BFAFA99A64A9E4CDEEC1BB1F571FE6AC77303FFCE1FEC9137BFF69DBF557FA97EE34F73FA8FFDC13975BDF7D0DFBA2FDDF94BE1F96C9ADA9C7EBAF48A947A11EC579A506D9C809C312EFD86421E4613FF5C67D8A3EA7AE56FDA7A600406B6DCCC8325B31E8AAD74902288ABC60E0D5CDF4B9BE9C18C4C6006ECC064069325C7E3921602A3F5E19A20B62663EE970CDB2C214F0C4DDF9B9C191991D12CB9556FABC17E06FA9513E81B67164E5FD93BB13280F58FE880ED434C1773559F6AA8B120FFFFF557BD7E8517EACF9786EE8E7D735179F407B4EB9FC85E9047FF87052AFEF98FFF05757CA189DE220000, 8926)
+GO
+INSERT [dbo].[FattureContenuto] ([IdFattura], [Contenuto], [Dimensione]) VALUES (54, 0x1F8B0800000000000400BD585973E246107E4F55FE03459EAD0BB08D4BD60663ECA50A7B09E0ADBCA50669D07605344433C25EFFFAF4E840333A7CA6E227D4C74CF7D7E7D8FDF2B4DB760E34E6C0A2CBAE6D58DD0E8D7C1640145E7613B13939EF7EF17EFDC5DD5FDC102192984CB654889845E093428F5E766FE60BDBE976F0B0885F04FCB2FB4388FD85693E3E3E1A8F3D83C5A1E95896655A431365020EE16F85F413871671DBFCF36EB6F47FD01D3981880B12F914B5385CF09438633E11A9DDB93A1C08A7F1019EC120218D9E81D048C44450236407038419309F9B4F3C3037A933D43CD886D3C93E088BD16B1203F94B520D142B4CDC7FF2862E22D8E9B87504BF5212D038E522FF1ABD59C584EF80A7B0E674E44C838C2E045E57D253CE9C504EBDE9CA358BDF1A7B8CB1F4A9B78F05E7E26C48EC2119F6FB1B299DB38EB7982DD7B8F398853145A30E6C1A1D8079967DEEF45CB3463F6ADCB0784704D3BC4973C4359B5847BDCCA46BCA0586426030F0AEECCF351B78A58593B1C6D850C4157C666C594C7FE7220980AD19E30263847657A473FCCD9600B8633C0D0199A3AF024D8F1583A5CA2822614C36E0830EFD0D709F6CE9F4FB48A1BF1A33356A566FD03F3D3B750676AF216059C81A6FC981CC79FA393A4BD139FA417473AE69C47608D6738AC96AB25C759657889646568D6A3CC85DD01076C77B173796ED9A3AADCCC41658DD25464203390A2086E767E61D8074EC7304E44851D118CDBDBE65F7A4F7F853C36997A0F5576CCBC2884870D26F450293FC00910FC41BCDD294CFBF1491FB1C0319D0FB0A1EAEA9D9EC4EB98FE64991C5448BD8C346BACABCAB6FAE59FC56EF4876346652C7EE0FFB3DF4B4A4A8FE903D08C472C9D04684D41E60ED605B97F55361295A92C41EB023316FF98016979FAA90CCFD19FC934090FB385BA26C8DAAF493465FDD056CB0387758526CB4C30C028E2D34D3EDC93F4C8B7689A256DB6A128B352D5E59D818CC7A336BAF58BD306EEE57B7B3F1D0FE6A3923EC98A34F17CE780BD292CE3E59AFB7886DC77E670D7DB42CF698B33872C8CBC561396DC5B17E5371DC7EB638644C5B438773E3A5E9D9305BAF58F0539DACB734A231D9829E0905F59AF9499A6FAAE92BD8B392B1BA961D4BA729C2D770004EBCC9C302E394FD56B9386A3CC772AC13EBECC4B1D350927A7DE3643DB14E260E76EAA2C02BA7C00210954454524D9A75E42C5632981A499F2FBB3D8B45C9744E8D21DE57256B3AA32DD63813A454B2D2AE52A36B5A6392702C9639094906982CA32A4D4DFB160F53CFB1496F997E7E4AFA0EB14864492EA7AEA9539ADCCE8E7152EB3552D58E1A5512C78473825DE70041BAFF552F91A8A732DE6AECE451C8BE2B7066C47E0E6283486EDB98E18609EB44B04263D83F1A5E65D60E88600D5B9A316DA767F44F335D95DE1867B94F388E16E2CA8A61BE0AC7BB01B35E07CC1EBC1B317B6838A71F85ECDCE85BFF2764B9952B264775D968EC73CBB0074727AA6C7D44B437B53422DFE443878E7C9CD95C2FBF6950AA6013EA0FECA15C31DBEE693C483741EDC057348265F67A520C929329DC02EE1011D590C8DA9F24631C8A6E987DD686F628163851ABDD21E3C984F2E693C5F2DBFD683629C6784A6D90FE4EE493217B75D885704E5423D97A2F7A745C7BBC0DC45C74FC5476BD5ECB815F32159D3F121209DCCEBC6C553B7EAAFB6184843BE038E5BCBF43DC11956F6D22539CEF29533E6D8A9AAF906B0A594255C473A2BAE9BC2DD5A59F8D617D63B89DCF867B347E4F9CAD4FC779B9C7475C470E0CF84C8C2B51CA26EC1B43A70ABF1C38EBA516754FE41EE5DDCB8ACB7EBE21A8E9D0A67BC03D917D205DB4C69B77387CE69C19A7DAB42A381535DCFFBD9E63F487992CD7219D7008A5366457E28650A1E82DADEEC6DBBCFB20A68D9E5BC7D5E455BF4BD1FFD6ED7C01AA35EC148CFAE68635852F0B99F10A73354F9F140D9C7A37685C06EF5840A4B925F36E6EE10CACD32B8BB6F27C5CD158BE1F4BD1EA0EFE92AC72EC2DB038829A84ED20FC2DBCFA5057F40603C329D7B80668CC566CB2D8E8D4A6E751FE0072CDA6FFDD7AFF029E854B19FA150000, 5626)
+GO
+INSERT [dbo].[FattureContenuto] ([IdFattura], [Contenuto], [Dimensione]) VALUES (55, 0x1F8B0800000000000400BD585973E246107E4F55FE03459EAD0BB08D4BD60663ECA50A7B09E0ADBCA50669D07605344433C25EFFFAF4E840333A7CA6E227D4C74CF7D7E7D8FDF2B4DB760E34E6C0A2CBAE6D58DD0E8D7C1640145E7613B13939EF7EF17EFDC5DD5FDC102192984CB654889845E093428F5E766FE60BDBE976F0B0885F04FCB2FB4388FD85693E3E3E1A8F3D83C5A1E95896655A431365020EE16F85F413871671DBFCF36EB6F47FD01D3981880B12F914B5385CF09438633E11A9DDB93A1C08A7F1019EC120218D9E81D048C44450236407038419309F9B4F3C3037A933D43CD886D3C93E088BD16B1203F94B520D142B4CDC7FF2862E22D8E9B87504BF5212D038E522FF1ABD59C584EF80A7B0E674E44C838C2E045E57D253CE9C504EBDE9CA358BDF1A7B8CB1F4A9B78F05E7E26C48EC2119F6FB1B299DB38EB7982DD7B8F398853145A30E6C1A1D8079B67DEEF45CB3463F6ADCB0784704D3BC4973C4359B5847BDCCA46BCA05864260309867657FAED9C02B2D9C8C35C68622AEE03363CB62FA3B1749006CCD18171823B4BB229DE36FB604C01DE36908C81C7D15687AAC182C5546110963B2011F74E86F80FB644BA7DF470AFDD598A951B37A83FEE9D9A933B07B0D01CB42D6784B0E64CED3CFD1598ACED10FA29B734D23B643B09E534C5693E5AAB3BC42B434B26A54E341EE8286B03BDEBBB8B16CD7D4696526B6C0EA2E31121AC85100313C3F33EF00A4639F2320478A8AC668EEF52DBB27BDC79F1A4EBB04ADBF625B16464482937E2B1298E407887C20DE6896A67CFEA588DCE718C880DE57F0704DCD6677CA7D344F8A2C265AC41E36D255E65D7D73CDE2B77A47B2A331933A767FD8EFA1A72545F587EC4120964B863622A4F6006B07DBBAAC9F0A4BD19224F6801D8979CB07B4B8FC548564EECFE09F0482DCC7D912656B54A59F34FAEA2E6083C5B9C39262A31D6610706CA1996E4FFE615AB44B14B5DA569358AC69F1CAC2C660D69B597BC5EA857173BFBA9D8D87F657CB1961C71C7DBA70C65B909674F6C97ABD456C3BF63B6BE8A365B1C79CC591435E2E0ECB692B8EF59B8AE3F6B3C52163DA1A3A9C1B2F4DCF86D97AC5829FEA64BDA5118DC916F44C28A8D7CC4FD27C534D5FC19E958CD5B5EC583A4D11BE860370E24D1E1618A7ECB7CAC551E33996639D5867278E9D8692D4EBDBB3EC13EB64E260A72E0ABC720A2C0051494425D5A45947CE622583A991F4F9B2DBB358944CE7D418E27D55B2A633DA628D33414A252BED2A35BAA6352609C7629993906480C932AAD2D4B46FF130F51C9BF496E9E7A7A4EF108B4496E472EA9A3AA5C9EDEC1827B55E2355EDA85125714C3827D8750E10A4FB5FF512897A2AE3ADC64E1E85ECBB026746ECE7203688E4B68D196E98B04E042B3486FDA3E15566ED8008D6B0A519D3767A46FF34D355E98D7196FB84E36821AEAC18E6AB70BC1B30EB75C0ECC1BB11B3878673FA51C8CE8DBEF57F42965BB9627254978DC63EB70C7B7074A2CAD647447B534B23F24D3E74E8C8C799CDF5F29B06A50A36A1FEC01ECA15B3ED9EC6837413D40E7C45235866AF27C5203999C22DE00E11510D89ACFD4932C6A1E886D9676D688F628113B5DA1D329E4C286F3E592CBFDD8F6693628CA7D406E9EF443E19B257875D08E7443592ADF7A247C7B5C7DB40CC45C74F65D7EBB51CF82553D1F9232191C0EDCCCB56B5E3A7BA1F4648B8038E53CEFB3BC41D51F9D62632C5F99E32E5D3A6A8F90AB9A6902554453C27AA9BCEDB525DFAD918D63786DBF96CB847E3F7C4D9FA749C977B7CC475E4C080CFC4B812A56CC2BE3174AAF0CB81B35E6A51F744EE51DEBDACB8ECE71B829A0E6DBA07DC13D907D2456BBC7987C367CE9971AA4DAB825351C3FDDFEB39467F98C9721DD20987506A4376256E08158ADED2EA6EBCCDBB0F62DAE8B9755C4D5EF5BB14FD6FDDCE17A05AC34EC1A86F6E5853F8B29019AF3057F3F449D1C0A97783C665F08E05449A5B32EFE616CEC03ABDB2682BCFC7158DE5FBB114ADEEE02FC92AC7DE028B23A849D80EC2DFC2AB0F75456F30309C728D6B80C66CC5268B8D4E6D7A1EE50F20D76CFADFADF72F17760775FA150000, 5626)
+GO
+INSERT [dbo].[FattureContenuto] ([IdFattura], [Contenuto], [Dimensione]) VALUES (56, 0x1F8B0800000000000400BD585973E246107E4F55FE03459EAD0BB08D4BD60663ECA50A7B09E0ADBCA50669D07605344433C25EFFFAF4E840333A7CA6E227D4C74CF7D7E7D8FDF2B4DB760E34E6C0A2CBAE6D58DD0E8D7C1640145E7613B13939EF7EF17EFDC5DD5FDC102192984CB654889845E093428F5E766FE60BDBE976F0B0885F04FCB2FB4388FD85693E3E3E1A8F3D83C5A1E95896655A431365020EE16F85F413871671DBFCF36EB6F47FD01D3981880B12F914B5385CF09438633E11A9DDB93A1C08A7F1019EC120218D9E81D048C44450236407038419309F9B4F3C3037A933D43CD886D3C93E088BD16B1203F94B520D142B4CDC7FF2862E22D8E9B87504BF5212D038E522FF1ABD59C584EF80A7B0E674E44C838C2E045E57D253CE9C504EBDE9CA358BDF1A7B8CB1F4A9B78F05E7E26C48EC2119F6FB1B299DB38EB7982DD7B8F398853145A30E6C1A1D8079B67DEEF45DB3463F6ADCB0784704D3BC4973C4359B5847BDCCA46BCA05864260309867657FAED9C02B2D9C8C35C68622AEE03363CB62FA3B1749006CCD18171823B4BB229DE36FB604C01DE36908C81C7D15687AAC182C5546110963B2011F74E86F80FB644BA7DF470AFDD598A951B37A83FEE9D9A933B07B0D01CB42D6784B0E64CED3CFD1598ACED10FA29B734D23B643B09E534C5693E5AAB3BCC248EA74D5AAC693DC050D6177BC787163D9AEA9D3CA546CC1D55D62283494A30062787E66DE0148C73E47448E14158ED1DCEB5B764FBA8F3F35A076095A7FC5B62C8C884427FD562430CB0F10F940BCD12CCDF9FC4B11B9CF319011BDAFE0E19A9ACDEE94FB689E14594CB4903D6CA4ABCCBBFAE69AC56FF58E6447632675ECFEB0DF434F4B8AEA0FD983402C970C6D4448ED01160FF67559401596A22549EC015B12F3960F6871F9A90AC9E49FC13F0904B98FB325CAD6A84A4369F4D55DC006AB738735C5463BCC20E0D84333DD9EFCC3B46897288AB5AD28B15AD3EA95958DC1AC77B3F692D52BE3E67E753B1B0FEDAF9633C29639FA74E58CB7202DE9EC93F57A8BD876EC77D6D047CB628F398B3387BC5C1C96D3561CEB3715C7ED678B43C6B4357438385E1A9F0DC3F58A053FD5D17A4B231A932DE8995050AF999FA4F9A69ABE823D2B19AB6BD9B1749A227C0D07E0C49B3C2C304ED96F958BB3C6732CC73AB1CE4E1C3B0D25A9D7B767D927D6C9C4C1565D1478E5145800A292884AAA49B38E9CC54A065323E90366B767B12899CEA931C4FBAA644D67B4C51A6782944A56DA556A744D6B4C128EC5322721C900936554A5A969DFE261EA3936E92DD3CF4F49DF2116892CC9E5D435754A93DBD9314E6ABD46AADA51A34AE298704EB0EB1C204817C0EA2512F554C65B8D9D3C0AD97705CE8CD8CF416C10C96D1B335C31619D0856680CFB47C3ABCCDA0111AC614B33A6EDF48CFE69A6ABD21BE32C170AC7D1425CD931CC57E1783760D6EB80D9837723660F0DE7F4A3909D1B7DEBFF842CB772C5E4A82E1B8D7D6E19F6E0E84495AD8F88F6A69646E49B7CE9D0918F339BEBE5370D4A156C42FD813D943B66DB3D8D07E926A81DF88A46B0CC9E4F8A417232855BC01D22A21A1259FB93648C43D10DB3CFDAD01EC502276AB53B643C9950DE7CB2587EBB1FCD26C5184FA90DD2DF897C3364CF0EBB10CE896A245BEF458F8E6B8FB781988B8E9FCAAED76B39F04BA6A2F347422281DB9997AD6AC74F753F8C9070071CA79CF777883BA2F2AD4D648AF33D65CAB74D51F315724D214BA88A784E54379DB7A5BAF4B331AC6F0CB7F3D9708FC6EF89B3F5E9382FF7F88AEBC881019F8971254AD9847D63E854E1970367BDD4A2EE89DCA3BC7B5971D9CF3704351DDA740FB827B20FA48BD678F30E87CF9C33E3549B5605A7A286FBBFD7738CFE3093E53AA4130EA1D486EC4ADC102A14BDA5D5DD789B771FC4B4D173EBB89ABCEA7729FADFBA9D2F40B5869D8251DFDCB0A6F06521335E61AEE6E993A28153EF068DCBE01D0B8834B764DECD2D9C81757A65D1569E8F2B1ACBF763295ADDC15F92558EBD0516475093B01D84BF85571FEA8ADE606038E51AD7008DD98A4D161B9DDAF43CCA1F40AED9F4CF5BEF5FB8E71168FB150000, 5627)
+GO
+INSERT [dbo].[FattureContenuto] ([IdFattura], [Contenuto], [Dimensione]) VALUES (57, 0x1F8B0800000000000400BD585973E246107E4F55FE03459EAD0BB08D4BD60663ECA50A7B09E0ADBCA50669D07605344433C25EFFFAF4E840333A7CA6E227D4C74CF7D7E7D8FDF2B4DB760E34E6C0A2CBAE6D58DD0E8D7C1640145E7613B13939EF7EF17EFDC5DD5FDC102192984CB654889845E093428F5E766FE60BDBE976F0B0885F04FCB2FB4388FD85693E3E3E1A8F3D83C5A1E95896655A431365020EE16F85F413871671DBFCF36EB6F47FD01D3981880B12F914B5385CF09438633E11A9DDB93A1C08A7F1019EC120218D9E81D048C44450236407038419309F9B4F3C3037A933D43CD886D3C93E088BD16B1203F94B520D142B4CDC7FF2862E22D8E9B87504BF5212D038E522FF1ABD59C584EF80A7B0E674E44C838C2E045E57D253CE9C504EBDE9CA358BDF1A7B8CB1F4A9B78F05E7E26C48EC2119F6FB1B299DB38EB7982DD7B8F398853145A30E6C1A1D8079967DEEF45CB3463F6ADCB0784704D3BC4973C4359B5847BDCCA46BCA0586426030F0AEECCF351B78A58593B1C6D850C4157C666C594C7FE7220980AD19E30263847657A473FCCD9600B8633C0D0199A3AF024D8F1583A5CA2822614C36E0830EFD0D709F6CE9F4FB48A1BF1A33356A566FD03F3D3B750676AF216059C81A6FC981CC79FA393A4BD139FA417473AE69C47608D6738AC96AB25C759657889646568D6A3CC85DD01076C77B173796ED9A3AADCCC41658DD25464203390A2086E767E61D8074EC7304E44851D118CDBDBE65F7A4F7F853C36997A0F5576CCBC2884870D26F450293FC00910FC41BCDD294CFBF1491FB1C0319D0FB0A1EAEA9D9EC4EB98FE64991C5448BD8C346BACABCAB6FAE59FC56EF4876346652C7EE0FFB3DF4B4A4A8FE903D08C472C9D04684D41E60ED605B97F55361295A92C41EB023316FF98016979FAA90CCFD19FC934090FB385BA26C8DAAF493465FDD056CB0387758526CB4C30C028E2D34D3EDC93F4C8B7689A256DB6A128B352D5E59D818CC7A336BAF58BD306EEE57B7B3F1D0FE6A3923EC98A34F17CE780BD292CE3E59AFB7886DC77E670D7DB42CF698B33872C8CBC561396DC5B17E5371DC7EB638644C5B438773E3A5E9D9305BAF58F0539DACB734A231D9829E0905F59AF9499A6FAAE92BD8B392B1BA961D4BA729C2D770004EBCC9C302E394FD56B9386A3CC772AC13EBECC4B1D350927A7DE3643DB14E260E76EAA2C02BA7C00210954454524D9A75E42C5632981A499F2FBB3D8B45C9744E8D21DE57256B3AA32DD63813A454B2D2AE52A36B5A6392702C9639094906982CA32A4D4DFB160F53CFB1496F997E7E4AFA0EB14864492EA7AEA9539ADCCE8E7152EB3552D58E1A5512C78473825DE70041BAFF552F91A8A732DE6AECE451C8BE2B7066C47E0E6283486EDB98E18609EB44B04263D83F1A5E65D60E88600D5B9A316DA767F44F335D95DE1867B94F388E16E2CA8A61BE0AC7BB01B35E07CC1EBC1B317B6838A71F85ECDCE85BFF2764B9952B264775D968EC73CBB0074727AA6C7D44B437B53422DFE443878E7C9CD95C2FBF6950AA6013EA0FECA15C31DBEE693C483741EDC057348265F67A520C929329DC02EE1011D590C8DA9F24631C8A6E987DD686F628163851ABDD21E3C984F2E693C5F2DBFD683629C6784A6D90FE4EE493217B75D885704E5423D97A2F7A745C7BBC0DC45C74FC5476BD5ECB815F32159D3F121209DCCEBC6C553B7EAAFB6184843BE038E5BCBF43DC11956F6D22539CEF29533E6D8A9AAF906B0A594255C473A2BAE9BC2DD5A59F8D617D63B89DCF867B347E4F9CAD4FC779B9C7475C470E0CF84C8C2B51CA26EC1B43A70ABF1C38EBA516754FE41EE5DDCB8ACB7EBE21A8E9D0A67BC03D917D205DB4C69B77387CE69C19A7DAB42A381535DCFFBD9E63F487992CD7219D7008A5366457E28650A1E82DADEEC6DBBCFB20A68D9E5BC7D5E455BF4BD1FFD6ED7C01AA35EC148CFAE68635852F0B99F10A73354F9F140D9C7A37685C06EF5840A4B925F36E6EE10CACD32B8BB6F27C5CD158BE1F4BD1EA0EFE92AC72EC2DB038829A84ED20FC2DBCFA5057F40603C329D7B80668CC566CB2D8E8D4A6E751FE0072CDA6FFDD7AFF029E854B19FA150000, 5626)
+GO
+SET IDENTITY_INSERT [dbo].[FattureRicevute] ON 
+GO
+INSERT [dbo].[FattureRicevute] ([Id], [NomeFile], [Hash], [CodiceDestinatario], [Formato], [MessageId], [IdentificativoSdi], [EsitoSpedizione], [ErroreSpedizione], [data], [IdFattureZIP]) VALUES (1, N'IT02607081201_4.xml', N'2cb60731ade4d0e3af7e9d5c23b4955a86937f31f85eecee6e6686346d6c478f', N'PXQYICS', N'FPR12', N'917142841', N'108785853', 0, N'Il processo non può accedere al file ''C:\temp\xml\IT05396940966_003cw.xml.p7m'' perché è in uso da un altro processo.', NULL, NULL)
+GO
+INSERT [dbo].[FattureRicevute] ([Id], [NomeFile], [Hash], [CodiceDestinatario], [Formato], [MessageId], [IdentificativoSdi], [EsitoSpedizione], [ErroreSpedizione], [data], [IdFattureZIP]) VALUES (2, N'IT05396940966_003cw.xml.p7m', N'2cb60731ade4d0e3af7e9d5c23b4955a86937f31f85eecee6e6686346d6c478f', N'PXQYICS', N'FPR12', N'917142841', N'108785853', 0, N'', NULL, NULL)
+GO
+INSERT [dbo].[FattureRicevute] ([Id], [NomeFile], [Hash], [CodiceDestinatario], [Formato], [MessageId], [IdentificativoSdi], [EsitoSpedizione], [ErroreSpedizione], [data], [IdFattureZIP]) VALUES (3, N'IT05396940966_003cw.xml.p7m', N'2cb60731ade4d0e3af7e9d5c23b4955a86937f31f85eecee6e6686346d6c478f', N'PXQYICS', N'FPR12', N'917142841', N'108785853', 0, N'Il processo non può accedere al file ''C:\temp\xml\IT05396940966_003cw.xml.p7m'' perché è in uso da un altro processo.', NULL, NULL)
+GO
+INSERT [dbo].[FattureRicevute] ([Id], [NomeFile], [Hash], [CodiceDestinatario], [Formato], [MessageId], [IdentificativoSdi], [EsitoSpedizione], [ErroreSpedizione], [data], [IdFattureZIP]) VALUES (4, N'IT05396940966_003cw.xml.p7m', N'2cb60731ade4d0e3af7e9d5c23b4955a86937f31f85eecee6e6686346d6c478f', N'PXQYICS', N'FPR12', N'917142841', N'108785853', 1, N'corretto 15/01/2019 Il processo non può accedere al file ''C:\temp\xml\IT05396940966_003cw.xml.p7m'' perché è in uso da un altro processo.', CAST(N'2019-10-01T00:00:00' AS SmallDateTime), NULL)
+GO
+INSERT [dbo].[FattureRicevute] ([Id], [NomeFile], [Hash], [CodiceDestinatario], [Formato], [MessageId], [IdentificativoSdi], [EsitoSpedizione], [ErroreSpedizione], [data], [IdFattureZIP]) VALUES (5, N'IT05396940966_003cw.xml.p7m', N'2cb60731ade4d0e3af7e9d5c23b4955a86937f31f85eecee6e6686346d6c478f', N'PXQYICS', N'FPR12', N'917142841', N'108785853', 0, N'Il processo non può accedere al file ''C:\temp\xml\IT05396940966_003cw.xml.p7m'' perché è in uso da un altro processo.', NULL, NULL)
+GO
+INSERT [dbo].[FattureRicevute] ([Id], [NomeFile], [Hash], [CodiceDestinatario], [Formato], [MessageId], [IdentificativoSdi], [EsitoSpedizione], [ErroreSpedizione], [data], [IdFattureZIP]) VALUES (6, N'IT05396940966_003cw.xml.p7m', N'2cb60731ade4d0e3af7e9d5c23b4955a86937f31f85eecee6e6686346d6c478f', N'PXQYICS', N'FPR12', N'917142841', N'108785853', 1, N'corretto 15/01/2019Il processo non può accedere al file ''C:\temp\xml\IT05396940966_003cw.xml.p7m'' perché è in uso da un altro processo.', NULL, NULL)
+GO
+INSERT [dbo].[FattureRicevute] ([Id], [NomeFile], [Hash], [CodiceDestinatario], [Formato], [MessageId], [IdentificativoSdi], [EsitoSpedizione], [ErroreSpedizione], [data], [IdFattureZIP]) VALUES (7, N'doppie\cippa.xml', N'222', N'222', N'2', N'2', N'2', 0, N'caricata a mano doppia', CAST(N'2019-02-01T00:00:00' AS SmallDateTime), NULL)
+GO
+INSERT [dbo].[FattureRicevute] ([Id], [NomeFile], [Hash], [CodiceDestinatario], [Formato], [MessageId], [IdentificativoSdi], [EsitoSpedizione], [ErroreSpedizione], [data], [IdFattureZIP]) VALUES (8, N'IT02355260981_0CYi0.xml.p7m', N'c9332a75ab698f946daad87eb30783a91e83b11818677160a5deb198ffc7b064', N'PXQYICS', N'FPR12', N'1113436638', N'137610360', 0, N'Nessuna azienda trovata per il caricamento nome: AM AUTO DI FRANCO AMATO pi:05299290659 cf:b4d8f951e0b84222b6529e70530dec2a', CAST(N'2019-02-27T13:42:00' AS SmallDateTime), NULL)
+GO
+INSERT [dbo].[FattureRicevute] ([Id], [NomeFile], [Hash], [CodiceDestinatario], [Formato], [MessageId], [IdentificativoSdi], [EsitoSpedizione], [ErroreSpedizione], [data], [IdFattureZIP]) VALUES (9, N'IT02355260981_0CZ8Z.xml.p7m', N'205dbf0e75a21e29e0e3e99807f869f15eba5c6af48225509c65405efafa68c6', N'PXQYICS', N'FPR12', N'1113484038', N'137621478', 1, N'', CAST(N'2019-02-27T14:14:00' AS SmallDateTime), NULL)
+GO
+INSERT [dbo].[FattureRicevute] ([Id], [NomeFile], [Hash], [CodiceDestinatario], [Formato], [MessageId], [IdentificativoSdi], [EsitoSpedizione], [ErroreSpedizione], [data], [IdFattureZIP]) VALUES (10, N'IT00826770059_00LVT.xml', N'861e53c2d4638b3b6226548b97c8c8c720b75213870d3673e908efc75c17191d', N'PXQYICS', N'FPR12', N'1113488527', N'137622937', 1, N'', CAST(N'2019-02-27T14:14:00' AS SmallDateTime), NULL)
+GO
+INSERT [dbo].[FattureRicevute] ([Id], [NomeFile], [Hash], [CodiceDestinatario], [Formato], [MessageId], [IdentificativoSdi], [EsitoSpedizione], [ErroreSpedizione], [data], [IdFattureZIP]) VALUES (11, N'IT06741351008_EE522.xml.p7m', N'b7098b624e2db555a3f41e180ba3063c398a9f4210949fc855313347ca6b7c3a', N'PXQYICS', N'FPR12', N'1113495826', N'137624643', 1, N'', CAST(N'2019-02-27T14:14:00' AS SmallDateTime), NULL)
+GO
+INSERT [dbo].[FattureRicevute] ([Id], [NomeFile], [Hash], [CodiceDestinatario], [Formato], [MessageId], [IdentificativoSdi], [EsitoSpedizione], [ErroreSpedizione], [data], [IdFattureZIP]) VALUES (12, N'IT03237470236_0bc1c.xml.p7m', N'1a9b0695d1ef5f4b8587c07dfaa982b9548e7b7930b423b9e5b831b63e053080', N'PXQYICS', N'FPR12', N'1113504311', N'137626877', 1, N'', CAST(N'2019-02-27T14:14:00' AS SmallDateTime), NULL)
+GO
+INSERT [dbo].[FattureRicevute] ([Id], [NomeFile], [Hash], [CodiceDestinatario], [Formato], [MessageId], [IdentificativoSdi], [EsitoSpedizione], [ErroreSpedizione], [data], [IdFattureZIP]) VALUES (13, N'IT06741351008_EG829.xml.p7m', N'234f4823a9daa457bd06e18c4f897b0a9f6007886cfafbbb19458adacc878afc', N'PXQYICS', N'FPR12', N'1113514675', N'137629193', 1, N'', CAST(N'2019-02-27T14:14:00' AS SmallDateTime), NULL)
+GO
+INSERT [dbo].[FattureRicevute] ([Id], [NomeFile], [Hash], [CodiceDestinatario], [Formato], [MessageId], [IdentificativoSdi], [EsitoSpedizione], [ErroreSpedizione], [data], [IdFattureZIP]) VALUES (14, N'IT06741351008_EJ724.xml.p7m', N'34f0b77e36d7eefd075f57425ca0279dab133dc9fea55c246ca0c34a565930cf', N'PXQYICS', N'FPR12', N'1113536141', N'137633976', 1, N'', CAST(N'2019-02-27T14:14:00' AS SmallDateTime), NULL)
+GO
+INSERT [dbo].[FattureRicevute] ([Id], [NomeFile], [Hash], [CodiceDestinatario], [Formato], [MessageId], [IdentificativoSdi], [EsitoSpedizione], [ErroreSpedizione], [data], [IdFattureZIP]) VALUES (15, N'IT06741351008_EK291.xml.p7m', N'20211821b64dda47682da69eadc5f586fbae552f26296cd791ac484ca0201533', N'PXQYICS', N'FPR12', N'1113539135', N'137634780', 1, N'', CAST(N'2019-02-27T14:14:00' AS SmallDateTime), NULL)
+GO
+INSERT [dbo].[FattureRicevute] ([Id], [NomeFile], [Hash], [CodiceDestinatario], [Formato], [MessageId], [IdentificativoSdi], [EsitoSpedizione], [ErroreSpedizione], [data], [IdFattureZIP]) VALUES (16, N'IT06741351008_EK290.xml.p7m', N'91a5cdaf55fc0d251ceb9b483f91313b6aa1a2bdc0bfcf2bf6f2eda429eac077', N'PXQYICS', N'FPR12', N'1113539159', N'137634779', 1, N'', CAST(N'2019-02-27T14:14:00' AS SmallDateTime), NULL)
+GO
+INSERT [dbo].[FattureRicevute] ([Id], [NomeFile], [Hash], [CodiceDestinatario], [Formato], [MessageId], [IdentificativoSdi], [EsitoSpedizione], [ErroreSpedizione], [data], [IdFattureZIP]) VALUES (17, N'IT06741351008_EK982.xml.p7m', N'b567af43a948e915e88529ccb3ad8eb643edd69aa27f089b6a20d7c15e862fe1', N'PXQYICS', N'FPR12', N'1113542881', N'137635663', 1, N'', CAST(N'2019-02-27T14:15:00' AS SmallDateTime), NULL)
+GO
+INSERT [dbo].[FattureRicevute] ([Id], [NomeFile], [Hash], [CodiceDestinatario], [Formato], [MessageId], [IdentificativoSdi], [EsitoSpedizione], [ErroreSpedizione], [data], [IdFattureZIP]) VALUES (18, N'IT0526289001419001_0ZJJP.xml', N'a7ea00dc3277e1aba30a62ee02d0297fc6fef08c1587da3dea18a02e27c2b0bd', N'PXQYICS', N'FPR12', N'1113546901', N'137636783', 1, N'', CAST(N'2019-02-27T14:15:00' AS SmallDateTime), NULL)
+GO
+INSERT [dbo].[FattureRicevute] ([Id], [NomeFile], [Hash], [CodiceDestinatario], [Formato], [MessageId], [IdentificativoSdi], [EsitoSpedizione], [ErroreSpedizione], [data], [IdFattureZIP]) VALUES (19, N'IT0526289001419001_0ZJAV.xml', N'3a95fa164250bb77e3169f74adc76f7e3ee1b7b3c41cba6970a353e92a8d7a52', N'PXQYICS', N'FPR12', N'1113546026', N'137636483', 1, N'', CAST(N'2019-02-27T14:15:00' AS SmallDateTime), NULL)
+GO
+INSERT [dbo].[FattureRicevute] ([Id], [NomeFile], [Hash], [CodiceDestinatario], [Formato], [MessageId], [IdentificativoSdi], [EsitoSpedizione], [ErroreSpedizione], [data], [IdFattureZIP]) VALUES (20, N'IT06741351008_EL513.xml.p7m', N'2ebb2db4d0ec27ac69d7fa060272a88e68ab7eaf870192cfce487b3c71a14423', N'PXQYICS', N'FPR12', N'1113548393', N'137637301', 1, N'', CAST(N'2019-02-27T14:15:00' AS SmallDateTime), NULL)
+GO
+INSERT [dbo].[FattureRicevute] ([Id], [NomeFile], [Hash], [CodiceDestinatario], [Formato], [MessageId], [IdentificativoSdi], [EsitoSpedizione], [ErroreSpedizione], [data], [IdFattureZIP]) VALUES (21, N'IT06741351008_EM736.xml.p7m', N'a2656e8d7843dc57d072e8b0af6c0d807198d65dafe1ad4bcce19d5f9295b508', N'PXQYICS', N'FPR12', N'1113556047', N'137639132', 1, N'', CAST(N'2019-02-27T14:15:00' AS SmallDateTime), NULL)
+GO
+INSERT [dbo].[FattureRicevute] ([Id], [NomeFile], [Hash], [CodiceDestinatario], [Formato], [MessageId], [IdentificativoSdi], [EsitoSpedizione], [ErroreSpedizione], [data], [IdFattureZIP]) VALUES (22, N'IT06741351008_EM741.xml.p7m', N'fa5a5e6e7aa87f29285c6f50ec9c52df3c6cf80a5e122c41590ec1c7aac8b4b2', N'PXQYICS', N'FPR12', N'1113556062', N'137639137', 1, N'', CAST(N'2019-02-27T14:15:00' AS SmallDateTime), NULL)
+GO
+INSERT [dbo].[FattureRicevute] ([Id], [NomeFile], [Hash], [CodiceDestinatario], [Formato], [MessageId], [IdentificativoSdi], [EsitoSpedizione], [ErroreSpedizione], [data], [IdFattureZIP]) VALUES (23, N'IT06741351008_EO250.xml.p7m', N'9e23c316fbca09c6d5d28fed0aee5714020ddfe6204b579ce27835e4f69eba1c', N'PXQYICS', N'FPR12', N'1113567954', N'137642143', 1, N'', CAST(N'2019-02-27T14:15:00' AS SmallDateTime), NULL)
+GO
+INSERT [dbo].[FattureRicevute] ([Id], [NomeFile], [Hash], [CodiceDestinatario], [Formato], [MessageId], [IdentificativoSdi], [EsitoSpedizione], [ErroreSpedizione], [data], [IdFattureZIP]) VALUES (24, N'IT06741351008_EO251.xml.p7m', N'db4d719367242bf505553933d596cb715ad1268978825030dee2f9f52ee9de30', N'PXQYICS', N'FPR12', N'1113567831', N'137642144', 1, N'', CAST(N'2019-02-27T14:15:00' AS SmallDateTime), NULL)
+GO
+INSERT [dbo].[FattureRicevute] ([Id], [NomeFile], [Hash], [CodiceDestinatario], [Formato], [MessageId], [IdentificativoSdi], [EsitoSpedizione], [ErroreSpedizione], [data], [IdFattureZIP]) VALUES (25, N'IT06741351008_EP264.xml.p7m', N'82ab42b0f519c482b1f82e1244608b47945a392f89275490ad755f153655f7f5', N'PXQYICS', N'FPR12', N'1113572446', N'137643685', 1, N'', CAST(N'2019-02-27T14:15:00' AS SmallDateTime), NULL)
+GO
+INSERT [dbo].[FattureRicevute] ([Id], [NomeFile], [Hash], [CodiceDestinatario], [Formato], [MessageId], [IdentificativoSdi], [EsitoSpedizione], [ErroreSpedizione], [data], [IdFattureZIP]) VALUES (26, N'IT06741351008_EP259.xml.p7m', N'54063a53db5192912e8d11a96941e07dac53e2a41ce69695f9935fa4c5b44af0', N'PXQYICS', N'FPR12', N'1113572473', N'137643680', 1, N'', CAST(N'2019-02-27T14:15:00' AS SmallDateTime), NULL)
+GO
+INSERT [dbo].[FattureRicevute] ([Id], [NomeFile], [Hash], [CodiceDestinatario], [Formato], [MessageId], [IdentificativoSdi], [EsitoSpedizione], [ErroreSpedizione], [data], [IdFattureZIP]) VALUES (27, N'IT06741351008_EP273.xml.p7m', N'd3143e842877f09ecd431405d5bbb06cf31aae6ffc51a2140fef1116d1c08f8b', N'PXQYICS', N'FPR12', N'1113572482', N'137643698', 1, N'', CAST(N'2019-02-27T14:15:00' AS SmallDateTime), NULL)
+GO
+INSERT [dbo].[FattureRicevute] ([Id], [NomeFile], [Hash], [CodiceDestinatario], [Formato], [MessageId], [IdentificativoSdi], [EsitoSpedizione], [ErroreSpedizione], [data], [IdFattureZIP]) VALUES (28, N'IT00407780485_00JEY.xml', N'a475451a78d093ba41a7bf55e62366d30fd1f428d9d905925176874c4e8375cc', N'PXQYICS', N'FPR12', N'1113581389', N'137646325', 1, N'', CAST(N'2019-02-27T14:15:00' AS SmallDateTime), NULL)
+GO
+INSERT [dbo].[FattureRicevute] ([Id], [NomeFile], [Hash], [CodiceDestinatario], [Formato], [MessageId], [IdentificativoSdi], [EsitoSpedizione], [ErroreSpedizione], [data], [IdFattureZIP]) VALUES (29, N'IT06628441005_ET246.xml.p7m', N'8c12863fb88569bf2f3766a72027b20726884ff8fe9f812c1fb524da1c5cf894', N'PXQYICS', N'FPR12', N'1113599203', N'137652263', 1, N'', CAST(N'2019-02-27T14:15:00' AS SmallDateTime), NULL)
+GO
+INSERT [dbo].[FattureRicevute] ([Id], [NomeFile], [Hash], [CodiceDestinatario], [Formato], [MessageId], [IdentificativoSdi], [EsitoSpedizione], [ErroreSpedizione], [data], [IdFattureZIP]) VALUES (30, N'IT06741351008_ET699.xml.p7m', N'ffdb3c713226c848a73346ba4d4e817836fa81ec9adec48111bfb64fbabcf1d0', N'PXQYICS', N'FPR12', N'1113602094', N'137653288', 1, N'', CAST(N'2019-02-27T14:15:00' AS SmallDateTime), NULL)
+GO
+INSERT [dbo].[FattureRicevute] ([Id], [NomeFile], [Hash], [CodiceDestinatario], [Formato], [MessageId], [IdentificativoSdi], [EsitoSpedizione], [ErroreSpedizione], [data], [IdFattureZIP]) VALUES (31, N'IT06628441005_ET839.xml.p7m', N'a56cb67a8ab604252631784eb414dc98c246224cff416f6150b011e1943cd46f', N'PXQYICS', N'FPR12', N'1113602327', N'137653448', 1, N'', CAST(N'2019-02-27T14:15:00' AS SmallDateTime), NULL)
+GO
+INSERT [dbo].[FattureRicevute] ([Id], [NomeFile], [Hash], [CodiceDestinatario], [Formato], [MessageId], [IdentificativoSdi], [EsitoSpedizione], [ErroreSpedizione], [data], [IdFattureZIP]) VALUES (32, N'IT06741351008_EV000.xml.p7m', N'2a7f2857baf504174280ce0fb9d2d6aafd109abd7ce1e7b896477bc6e07f8756', N'PXQYICS', N'FPR12', N'1113610011', N'137656010', 1, N'', CAST(N'2019-02-27T14:15:00' AS SmallDateTime), NULL)
+GO
+INSERT [dbo].[FattureRicevute] ([Id], [NomeFile], [Hash], [CodiceDestinatario], [Formato], [MessageId], [IdentificativoSdi], [EsitoSpedizione], [ErroreSpedizione], [data], [IdFattureZIP]) VALUES (33, N'IT06741351008_EV438.xml.p7m', N'813e656ed3aea29f2b8273dfb1c9bed4b1c5bdae262185959c8d7ef8f548fbaf', N'PXQYICS', N'FPR12', N'1113612610', N'137656893', 1, N'', CAST(N'2019-02-27T14:15:00' AS SmallDateTime), NULL)
+GO
+INSERT [dbo].[FattureRicevute] ([Id], [NomeFile], [Hash], [CodiceDestinatario], [Formato], [MessageId], [IdentificativoSdi], [EsitoSpedizione], [ErroreSpedizione], [data], [IdFattureZIP]) VALUES (34, N'IT00967720285_067Pz.xml.p7m', N'45d8641fe3301203a92a2e0210c84d5ffec63405b5b6c5a2810fe33c01b19e25', N'PXQYICS', N'FPR12', N'1119746527', N'139864359', 1, N'', CAST(N'2019-02-27T14:16:00' AS SmallDateTime), NULL)
+GO
+INSERT [dbo].[FattureRicevute] ([Id], [NomeFile], [Hash], [CodiceDestinatario], [Formato], [MessageId], [IdentificativoSdi], [EsitoSpedizione], [ErroreSpedizione], [data], [IdFattureZIP]) VALUES (35, N'IT02658521204_P000P.xml', N'fee8fcd9f9e932410ecf8c1207976bded1765d1d92c82e0077a6974173852145', N'PXQYICS', N'FPR12', N'1119760191', N'139866220', 1, N'', CAST(N'2019-02-27T14:16:00' AS SmallDateTime), NULL)
+GO
+INSERT [dbo].[FattureRicevute] ([Id], [NomeFile], [Hash], [CodiceDestinatario], [Formato], [MessageId], [IdentificativoSdi], [EsitoSpedizione], [ErroreSpedizione], [data], [IdFattureZIP]) VALUES (36, N'IT02002750483_017T1.xml.p7m', N'd811340702bf2de5722d83e0a1dfcec050c5785d643177ec786bb37807738eb0', N'PXQYICS', N'FPR12', N'1119858232', N'139879298', 1, N'', CAST(N'2019-02-27T14:16:00' AS SmallDateTime), NULL)
+GO
+INSERT [dbo].[FattureRicevute] ([Id], [NomeFile], [Hash], [CodiceDestinatario], [Formato], [MessageId], [IdentificativoSdi], [EsitoSpedizione], [ErroreSpedizione], [data], [IdFattureZIP]) VALUES (37, N'IT07155170157_14V8M.xml', N'79505fe1c18f83ecf9b7411b072703ec2b01db4fb4d39326e92f92708b04ad59', N'PXQYICS', N'FPR12', N'1119875549', N'139882160', 1, N'', CAST(N'2019-02-27T14:16:00' AS SmallDateTime), NULL)
+GO
+INSERT [dbo].[FattureRicevute] ([Id], [NomeFile], [Hash], [CodiceDestinatario], [Formato], [MessageId], [IdentificativoSdi], [EsitoSpedizione], [ErroreSpedizione], [data], [IdFattureZIP]) VALUES (38, N'IT00967720285_873Dz.xml.p7m', N'081c3573268513f5438f3ab718c081534ec82b0cec35c05f61fd79921e92f32e', N'PXQYICS', N'FPR12', N'1119891486', N'139884582', 1, N'', CAST(N'2019-02-27T14:16:00' AS SmallDateTime), NULL)
+GO
+SET IDENTITY_INSERT [dbo].[FattureRicevute] OFF
+GO
+SET IDENTITY_INSERT [dbo].[FattureZIP] ON 
+GO
+INSERT [dbo].[FattureZIP] ([Id], [PathFileXml], [PathFileXml_name], [CF], [PIVA], [DataRicezione], [Lavorato], [DataLavorazione], [Contenuto], [ErroreInterno], [ErroreDescrizione], [ErroreData]) VALUES (2, N'pathfilexml_Valore', N'pathfilexml_name_Valore', N'XXXXXX12Y26A215T', N'12345678901', CAST(N'2020-08-27T16:57:56.323' AS DateTime), 0, NULL, 0x504B0304140000000800E96AFC50FEB87CC725010000EC0100001E000000495430303236313330303335345F46505230315F4D545F3030312E786D6C6D91CD4EC3301084EF48BC4364CE64377F55A81C57D02A520E45A88433B26A37584AEC2A3609BC3D6E1B8A80FAE69D99D5B7BB74F1D1B5C1207BAB8C2E48142209A4DE1AA174539097BABCCD49601DD782B746CB827C4A4B16ECFA8A6A9BCCD7D271C19DAAF4A04CA95A19F86EDACEB58D0BF2E6DC7E0E308E633826A1E91B881111F00EBC4958D5DC90B33DF965DF71E7DE7BBEE76163865039B0424127ADE54DA36038424EC8F2C4EC8102FF6825A4766AA7B61E6A30CFA26219666986799A53F82F4EA947D3C9033DAB6AC4781625884996BE964F1B8C428F48E1EC98124BBFA0AD5C49EB94E68EF7CAB0FB87E50A130A17A429549ABEE3CE30DF378A297C7F27B5F67007B0D3325944E14F65F2AD8F7B909560E90CF33C453FD94FCD1F062E5EC62B5F504B0304140000000800E96AFC505B09C5A8870C000059B7010017000000495430303236313330303335345F46505230312E786D6CED9A5B73A25A16C79FA73F0595BC4EE4E2B5BB684F11C51C6A541C20E9A97E4931BADBB3AB0CE40049F7C9A79F0DA840F082974374FCBFE9BEC07F2FD65A7B2FF8C9BFFD7A9A71AFC4F3A9EB7CBD122BC215479CB13BA1CEF4EBD5BDD5BB695DFDD6FE243F7FE9D941F0E2D9EA8C0481E73A746C2FA691AF57BD91214A571CBB96E37F99F85FAFFE0882E72F3CFFF3E7CFCACF6AC5F5A6BC2408022F7CE6D998894FA7D7579FE2D1CFCBC1F4D5F689F74ADF68C59E12E78DDAC4093C3B2095A9FB5AA1013F71C73EFFCB9FF03F222D847F152BD2E23ABF7CBAE6B622FF9F41DF1CFF419EEC1BEAF881ED8C099BE5D32F7ED4D877C776102DFF20215CEAE671BBFD6C2F66905FCFAE17CCC7DB6FA1D5787F42F9E5C0E8127CACF27142668F3FE88C3CB2A53DCE0D3F521E17F67E64432BECF657ED4F1C27E71FCCEFC49E102FEC64DD5DB636CBB3FD27EA4793E366D6A14DE2E62060AB5B36471D239BF8A4AD5932BFF89DEEEDB8133A266D41901A625510AAF59ACC2F5B1757E7575F5E1E79EED4234CCAABAB39AFD46D4B82C83CA321F3B99EC5949EEB3DD9819B5944E47032BFAA6B312D16D4257E401D3BB03D7645E5B6D315AA32BFA22B3616BFDA5A72874CC2558C98BE80DDCF4BEE124E501C7BEAD93FE89866ECD4A3FED89E11ED41499AB799B7B08143B1AB6F315FF8BC2B7B956C573265B9023B23A54B1CF7893AB1BFB695EF9A3AEC2A5C57BBD32CA5AF7266C5A8F42B329F1D9612B8EAB2B241A6F469A9C1E809A2CC67DB963EB4DAB8B2C99E46DAD2CE847AF4EDCD6D3F680AD7D707B78AD1D5653E694FC60E5F9E88E776E82B1DBBED1AB348A621654365D4961A9F0541E6C39F69E33EBDB045F6F5AE26F3F33F492FF3E157EA8CA9CD06C87CF22F25606EA5F0E90FB31693F9646132BFC6E5982B469E193A2DBB7D2EBEFE4E7F642ED46836A4BA583DC41F93AB70073AA4A59A1667DEEEE480FB3995A10F94020E254A5B1C4A10AB6B1CAA63A80365A347758C833D6A9DE7C8FCA64D64C50E73EB4EFE9A5F3634E71D718867CF1263A61BBBEE9899C409D2D6B0E8B39BB45BDD300764DB92B15D664ADF6EABF76CFDF3DFA94E96BEC32DA475234837623D7ABAE9FEF869B4C5161F0E5A3C9DF4737E0A3766D77203E680C9ED6BD556BD52FF2CF36BFA9706DEB0D26C67CA5CB7C4A1667CC0482CC66C6B4F67D4ED538790DC0AC256BB2DCA7CFAEFFB1053BC8039DD6C7EFB4C5768DCB6E2FF6443D89E29F3A9D6FCE0077B16E61BC5B04499CF34A5426BDD2DD94AFCB147633F1C28966A68E15EA176B5BE2AF3E9CE64CABF5F6C27A0ECC1B1A340450893EEB2251974EFB0FF03EA334F6CFFEB4EE6D3FFD3F1425880467DE1B62E46D70BAFF8AE2399618E5DF6C806F6744A5D2F1B3F4B5F6D9B9DD841333D23E28DD9E37E0953577423994F37A58CB5F11E475250FF6801D2FE02E287130759BB556D563E87574A3726639519FDF38535869B8C14DF33DD941E1878340E413F3CDF2F8330B52AD6CDE2C2FC6619DA9D32CF4176905DA3417F108F46816DB12BB9EDA16E0C429FBE1EEAD7329FEB4EAD7AA3849D049A1D7D3850EE8A4A0C875B3A77DDD5A0F08C14B23B86372DAAF073583B897B8B93F9D5BB4EB1CD485AB719A573BCD2B70C9D4BB6819E6EF414CD2AB011ACDD0776CFF09944126F31279C5D1E94BE6EA8DCF58302B79B77A4FDAC5AF619483AF00CC42EA175F4BECE8D5483EB2996756F285BFDBF5EEC1C342C780CAAEE1823F5138F910FD98147A632D40A07494F61123BFA3FB9EB5E07813CEF48476EEDDC8A996520CF83981B19FA4381503E6A24A3A039BF82A62616AD67840DC974680791A384E7AEF86709895667E7E53B4DE74C75F85DE10CA6A86F2ADCB56E9698D2BADA4361BDBD7BDDD0D8B620449F15505940E185EEAEF552775756E019E1DEA81EB8C5A6AEB36557958AD6875561C702B121E0F09B13183F98A20A0716274AD55ABDD16CDD349A3762F364654A8D5AB355AB8937CD16B248DC914E1B8D52B3485FB72CEDF0437A5468CFAFB5258B548F5B66372BF55D328D24D58B661A51B8944C133E38B35358E2FC39E7DAD74C9A7FFFABC6E6CC77AC9936FFCC280937A27453CD4663D477F199A2597635DFD10787A78AE57B3976B5816A9ADBAB79E9B819A355DFF1CD5C13A793BCC0F9D32B2AB133E098C9A57A8D2FEF64724EB1DC2AF265C7A0539BB35F7C3AA3CC616D2E7C1D429C9028E1A8F323E4F2C271940BC8D8A1E33F0847B8F05DC90B8B9A57C24DC88C9B2C70897541F72E24763CC79F789C68C35E1829DF357DA8715DBD733F50A37A56EB96163686DA37AD6EE1EF52AA6132B12A77CDA696FB76E5DBEFFABDA916CF4003F5D1D47BD637C5501FA3A97CA68D175B1521768F72166069239D3DE2A20B58BC5FBEB6465D412C2F8B86D864A7B83B0CBB9AC54476BA42F3BA4C4B8E8ABF2462C5A0FA706F45A614C5EBDDCF89DB8E89C7FDC0A4743AAAB9FBDACCD1215E92DF2BFE011E0D3C1A3EDF80473BEBB7F5507859550B78B4BF27BB8047038F061E6DB30782475BAD113C5A6E3078341434E0D1F64DB4E0D150FB40E119EEAEE0D1C0A38147DB2A133C1A7834F068A79469C0A39D65A6008F061EEDC3720678B4A3C63278B412E2043C5AF13703E0D14A4951E0D172E744F068E0D1C0A38147038F86EF0917A8103C1A7834F068E0D1C0A36DF640F068AB358247CB0D068F8682063CDABE89163C1A6A1F283CC3DD153C1A78B4FF5B1EED7832C1A38147038F764A99063CDA59660AF068E0D13E2C6780473B6A2C83472B214EC0A3157F33001EAD9414051E2D774E048F061E0D3C1A7834F068F89E70810AC1A38147038F061E0D3CDA660F048FB65A2378B4DC60F0682868C0A3ED9B68C1A3A1F681C233DC5DC1A38147038FB655267834F068E0D14E29D380473BCB4C011E0D3CDA87E50CF068478D65F06825C40978B4E26F06C0A39592A2C0A3E5CE89E0D1C0A38147038F061E0DDF132E50217834F068E0D1C0A38147DBEC81E0D1566B048F961B0C1E0D050D78B47D132D7834D43E507886BB2B7834F068E0D1B6CA048F061E0D3CDA29651AF068679929C0A38147FBB09C011EEDA8B10C1EAD8438018F56FCCD0078B452521478B4DC39113C1A7834F068E0D1C0A3E17BC2052A048F061E0D3C1A7834F0689B3D103CDA6A8DE0D17283C1A3A1A0018FB66FA23D671E0D3C1A148247038F061EED70D7078F769159043C1A7834F068E0D1C0A38147038F7629B10C1EAD8438018F56FCCD0078B452521478B4DC39113C1A7834F068E0D1C0A3E17BC2052A048F061E0D3C1A7834F0689B3D103CDA6A8DE0D17283C1A3A1A0018FB66FA2058F86DA070ACF7077058F061E0D3CDA5699E0D1C0A381473BA54C031EED2C33057834F0681F9633C0A31D3596C1A3951027E0D18ABF19008F564A8A028F963B278247038F061E0D3C1A78347C4FB84085E0D1C0A38147038F061E6DB30782475BAD113C5A6E3078341434E0D1F64DB4E0D150FB40E119EEAEE0D1C0A38147DB2A133C1A7834F068A79469C0A39D65A6008F061EEDC3720678B4A3C63278B412E2043C5AF13703E0D14A4951E0D172E744F068E0D1C0A38147038F86EF0917A8103C1A7834F068E0D1C0A36DF6C023EEC03B940BE0D18E19C8E0D1C0A35D4641031EEDA094061E0D0A4F42E139EDAEE0D1C0A38147DB2A133C1A7834F068A79469C0A39D65A6008F061EEDC3720678B4A3C63278B412E2043C5AF13703E0D14A4951E0D172E744F068E0D1C0A38147038F86EF0917A8103C1A7834F068E0D1C0A36DF640F068AB358247CB0D068F8682063CDABE89163C1A6A1F283CC3DD153C1A7834F0685B658247038F061EED94320D78B4B3CC14E0D1C0A37D58CE008F76D458068F56429C80472BFE66003C5A29290A3C5AEE9C081E0D3C1A7834F068E0D1F03DE102158247038F061E0D3C1A78B4CD1E081E6DB546F068B9C1E0D150D08047DB37D1824743ED038567B8BB8247038F061E6DAB4CF068E0D1C0A39D52A6018F769699023C1A78B40FCB19E0D18E1ACBE0D14A8813F068C5DF0C80472B254581475B765E348F366F0F871B943CD3993B75F7A94BCC67E213653C26BEEF7A34CCC8525DE6DFB726E3B5A767B663FC97CE48F8CB0BDCA8420AE7E47BB2B3FCF0642655EAD578A89F3997A93E9D867369AC8F550BEF5A1243AC5A71213B6CDC43DEAFB85A69EE68876AF5B35869143444B3D6A8888DA35B226EBC250E3589F7CA36EB7973D83AB2A776E478CB2B745C67126DE8A93E6B2444DFE0F23D8B594B4FCC75B1CE813BB143A149DF60244A329F6F4FE684C559262EBC279ABEB12488AD1BA17623D6657EDBD8E4AA77D4F51C9A1B50651EB0A62BABC81CDB13E2BCD9EF75546FC49ACCAF1E917DCE5E903291D8125A95DADC3B323DF9103F199B4BC7B179E3509BB3675F2DD7E67120651A65BE6707E1373D75C626792C36C6F6AD3BF9ABFD49E69FBFE4FBDA9FFE07504B01021400140000000800E96AFC50FEB87CC725010000EC0100001E0024000000000000002000000000000000495430303236313330303335345F46505230315F4D545F3030312E786D6C0A0020000000000001001800C873367FD164D601C873367FD164D6010098E32AC264D601504B01021400140000000800E96AFC505B09C5A8870C000059B70100170024000000000000002000000061010000495430303236313330303335345F46505230312E786D6C0A0020000000000001001800049C307FD164D601049C307FD164D60100EF8941C264D601504B05060000000002000200D90000001D0E00000000, NULL, NULL, NULL)
+GO
+SET IDENTITY_INSERT [dbo].[FattureZIP] OFF
+GO
+INSERT [dbo].[FiFatture] ([IdFattura], [NomeFileFi], [FlagErrore], [DataInserimento], [FlagElaborato], [rilavoratomanuale]) VALUES (CAST(46 AS Numeric(18, 0)), N'FI.03412291209.2020240.1041.001.zip', 0, CAST(N'2020-08-27T12:48:00' AS SmallDateTime), 0, NULL)
+GO
+INSERT [dbo].[FiFatture] ([IdFattura], [NomeFileFi], [FlagErrore], [DataInserimento], [FlagElaborato], [rilavoratomanuale]) VALUES (CAST(47 AS Numeric(18, 0)), N'FI.03412291209.2020240.1041.001.zip', 0, CAST(N'2020-08-27T12:48:00' AS SmallDateTime), 0, NULL)
+GO
+INSERT [dbo].[FiFatture] ([IdFattura], [NomeFileFi], [FlagErrore], [DataInserimento], [FlagElaborato], [rilavoratomanuale]) VALUES (CAST(48 AS Numeric(18, 0)), N'FI.03412291209.2020240.1041.001.zip', 0, CAST(N'2020-08-27T12:48:00' AS SmallDateTime), 0, NULL)
+GO
+INSERT [dbo].[FiFatture] ([IdFattura], [NomeFileFi], [FlagErrore], [DataInserimento], [FlagElaborato], [rilavoratomanuale]) VALUES (CAST(46 AS Numeric(18, 0)), N'FI.03412291209.2020240.1046.001.zip', 0, CAST(N'2020-08-27T12:52:00' AS SmallDateTime), 0, NULL)
+GO
+INSERT [dbo].[FiFatture] ([IdFattura], [NomeFileFi], [FlagErrore], [DataInserimento], [FlagElaborato], [rilavoratomanuale]) VALUES (CAST(47 AS Numeric(18, 0)), N'FI.03412291209.2020240.1046.001.zip', 0, CAST(N'2020-08-27T12:52:00' AS SmallDateTime), 0, NULL)
+GO
+INSERT [dbo].[FiFatture] ([IdFattura], [NomeFileFi], [FlagErrore], [DataInserimento], [FlagElaborato], [rilavoratomanuale]) VALUES (CAST(48 AS Numeric(18, 0)), N'FI.03412291209.2020240.1046.001.zip', 0, CAST(N'2020-08-27T12:52:00' AS SmallDateTime), 0, NULL)
+GO
+INSERT [dbo].[FiFatture] ([IdFattura], [NomeFileFi], [FlagErrore], [DataInserimento], [FlagElaborato], [rilavoratomanuale]) VALUES (CAST(50 AS Numeric(18, 0)), N'FI.03412291209.2020240.1046.001.zip', 0, CAST(N'2020-08-27T12:52:00' AS SmallDateTime), 0, NULL)
+GO
+SET IDENTITY_INSERT [dbo].[Logs] ON 
+GO
+INSERT [dbo].[Logs] ([IdLog], [DataLog], [CodeLog], [DescriptionLong]) VALUES (1, CAST(N'2018-04-20T14:37:23.600' AS DateTime), N'ElaboraFileEsiti', N'Errore Impossibile trovare il file specificato')
+GO
+INSERT [dbo].[Logs] ([IdLog], [DataLog], [CodeLog], [DescriptionLong]) VALUES (2, CAST(N'2018-07-05T14:24:29.360' AS DateTime), N'ElaboraFileEsiti', N'Impossibile eseguire un''associazione di runtime su un riferimento Null')
+GO
+INSERT [dbo].[Logs] ([IdLog], [DataLog], [CodeLog], [DescriptionLong]) VALUES (3, CAST(N'2018-07-05T14:55:49.693' AS DateTime), N'ElaboraFileEsiti', N'Indice oltre i limiti della matrice.')
+GO
+INSERT [dbo].[Logs] ([IdLog], [DataLog], [CodeLog], [DescriptionLong]) VALUES (4, CAST(N'2019-01-10T14:23:57.457' AS DateTime), N'ElaboraFileEsiti', N'Violazione del vincolo PRIMARY KEY ''PK_SdiFtp''. Impossibile inserire la chiave duplicata nell''oggetto ''dbo.SdiFtp''. Valore della chiave duplicata: (ITBNNLRT77A09A859G_00002_MC_001.xml).
+L''istruzione è stata interrotta.')
+GO
+SET IDENTITY_INSERT [dbo].[Logs] OFF
+GO
+INSERT [dbo].[Utenti] ([Id], [Username], [Password], [Chiave], [Status]) VALUES (CAST(1 AS Decimal(18, 0)), N'seba', N'password', N'a7f06c7e-b596-49db-9892-543087640d86', 1)
+GO
+ALTER TABLE [dbo].[Esiti] ADD  CONSTRAINT [DF_Esiti_Data]  DEFAULT (getdate()) FOR [Data]
+GO
+ALTER TABLE [dbo].[Fatture] ADD  CONSTRAINT [DF_Fatture_Firmato]  DEFAULT ((0)) FOR [Firmato]
+GO
+ALTER TABLE [dbo].[Fatture] ADD  CONSTRAINT [DF_Fatture_Spedito]  DEFAULT ((0)) FOR [Spedito]
+GO
+ALTER TABLE [dbo].[Fatture] ADD  CONSTRAINT [DF_Fatture_Ricevuto]  DEFAULT ((0)) FOR [Ricevuto]
+GO
+ALTER TABLE [dbo].[Fatture] ADD  CONSTRAINT [DF_Fatture_Esito]  DEFAULT ((0)) FOR [Esito]
+GO
+ALTER TABLE [dbo].[Fatture] ADD  CONSTRAINT [DF_Fatture_Accettato]  DEFAULT ((0)) FOR [Accettato]
+GO
+ALTER TABLE [dbo].[Fatture] ADD  CONSTRAINT [DF_Fatture_Scarto]  DEFAULT ((0)) FOR [Scarto]
+GO
+ALTER TABLE [dbo].[Fatture] ADD  CONSTRAINT [DF_Fatture_MancataConsegna]  DEFAULT ((0)) FOR [MancataConsegna]
+GO
+ALTER TABLE [dbo].[Fatture] ADD  CONSTRAINT [DF_Fatture_ProntoSoteria]  DEFAULT ((0)) FOR [ProntoSoteria]
+GO
+ALTER TABLE [dbo].[Fatture] ADD  CONSTRAINT [DF_Fatture_Dataricezione]  DEFAULT (getdate()) FOR [Dataricezione]
+GO
+ALTER TABLE [dbo].[Fatture] ADD  CONSTRAINT [DF_Fatture_b2b]  DEFAULT ((0)) FOR [b2b]
+GO
+ALTER TABLE [dbo].[Fatture] ADD  CONSTRAINT [DF_Fatture_CanaleSdi]  DEFAULT ((0)) FOR [SaltaCanaleSdi]
+GO
+ALTER TABLE [dbo].[Fatture] ADD  CONSTRAINT [DF_Fatture_FatturaInversa]  DEFAULT ((0)) FOR [FatturaInversa]
+GO
+ALTER TABLE [dbo].[FattureRicevute] ADD  CONSTRAINT [DF_FattureRicevute_EsitoSpedizione]  DEFAULT ((0)) FOR [EsitoSpedizione]
+GO
+ALTER TABLE [dbo].[FattureRicevute] ADD  CONSTRAINT [DF_FattureRicevute_data]  DEFAULT (getdate()) FOR [data]
+GO
+ALTER TABLE [dbo].[FattureZIP] ADD  CONSTRAINT [DF_FattureZIP_Lavorato]  DEFAULT ((0)) FOR [Lavorato]
+GO
+ALTER TABLE [dbo].[FiFatture] ADD  CONSTRAINT [DF_FiFatture_FlagErrore]  DEFAULT ((0)) FOR [FlagErrore]
+GO
+ALTER TABLE [dbo].[FiFatture] ADD  DEFAULT (getdate()) FOR [DataInserimento]
+GO
+ALTER TABLE [dbo].[FiFatture] ADD  DEFAULT ((0)) FOR [FlagElaborato]
+GO
+ALTER TABLE [dbo].[Mail] ADD  CONSTRAINT [DF_Mail_Processato]  DEFAULT ((0)) FOR [Processato]
+GO
+ALTER TABLE [dbo].[Mail] ADD  CONSTRAINT [DF_Mail_ExtraSistema]  DEFAULT ((1)) FOR [ExtraSistema]
+GO
+ALTER TABLE [dbo].[SdiFtp] ADD  CONSTRAINT [DF_SdiFtp_Esitoletto]  DEFAULT ((0)) FOR [Esitoletto]
+GO
+ALTER TABLE [dbo].[SdiFtp] ADD  CONSTRAINT [DF_SdiFtp_Corretto]  DEFAULT ((0)) FOR [Corretto]
+GO
+ALTER TABLE [dbo].[SdiFtp] ADD  CONSTRAINT [DF_SdiFtp_InviatoSdi]  DEFAULT ((0)) FOR [InviatoSdi]
+GO
+ALTER TABLE [dbo].[SdiFtp] ADD  CONSTRAINT [DF__SdiFtp__IdFattur__49C3F6B7]  DEFAULT ((0)) FOR [IdFattura]
+GO
+ALTER TABLE [dbo].[Utenti] ADD  CONSTRAINT [DF_Utenti_Key]  DEFAULT (newid()) FOR [Chiave]
+GO
+ALTER TABLE [dbo].[Utenti] ADD  CONSTRAINT [DF_Utenti_Status]  DEFAULT ((1)) FOR [Status]
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_DiagramPane1', @value=N'[0E232FF0-B466-11cf-A24F-00AA00A3EFFF, 1.00]
+Begin DesignProperties = 
+   Begin PaneConfigurations = 
+      Begin PaneConfiguration = 0
+         NumPanes = 4
+         Configuration = "(H (1[40] 4[20] 2[20] 3) )"
+      End
+      Begin PaneConfiguration = 1
+         NumPanes = 3
+         Configuration = "(H (1 [50] 4 [25] 3))"
+      End
+      Begin PaneConfiguration = 2
+         NumPanes = 3
+         Configuration = "(H (1 [50] 2 [25] 3))"
+      End
+      Begin PaneConfiguration = 3
+         NumPanes = 3
+         Configuration = "(H (4 [30] 2 [40] 3))"
+      End
+      Begin PaneConfiguration = 4
+         NumPanes = 2
+         Configuration = "(H (1 [56] 3))"
+      End
+      Begin PaneConfiguration = 5
+         NumPanes = 2
+         Configuration = "(H (2 [66] 3))"
+      End
+      Begin PaneConfiguration = 6
+         NumPanes = 2
+         Configuration = "(H (4 [50] 3))"
+      End
+      Begin PaneConfiguration = 7
+         NumPanes = 1
+         Configuration = "(V (3))"
+      End
+      Begin PaneConfiguration = 8
+         NumPanes = 3
+         Configuration = "(H (1[56] 4[18] 2) )"
+      End
+      Begin PaneConfiguration = 9
+         NumPanes = 2
+         Configuration = "(H (1 [75] 4))"
+      End
+      Begin PaneConfiguration = 10
+         NumPanes = 2
+         Configuration = "(H (1[66] 2) )"
+      End
+      Begin PaneConfiguration = 11
+         NumPanes = 2
+         Configuration = "(H (4 [60] 2))"
+      End
+      Begin PaneConfiguration = 12
+         NumPanes = 1
+         Configuration = "(H (1) )"
+      End
+      Begin PaneConfiguration = 13
+         NumPanes = 1
+         Configuration = "(V (4))"
+      End
+      Begin PaneConfiguration = 14
+         NumPanes = 1
+         Configuration = "(V (2))"
+      End
+      ActivePaneConfig = 0
+   End
+   Begin DiagramPane = 
+      Begin Origin = 
+         Top = 0
+         Left = 0
+      End
+      Begin Tables = 
+         Begin Table = "Mail"
+            Begin Extent = 
+               Top = 9
+               Left = 617
+               Bottom = 206
+               Right = 870
+            End
+            DisplayFlags = 280
+            TopColumn = 0
+         End
+         Begin Table = "Allegati"
+            Begin Extent = 
+               Top = 9
+               Left = 57
+               Bottom = 152
+               Right = 310
+            End
+            DisplayFlags = 280
+            TopColumn = 0
+         End
+      End
+   End
+   Begin SQLPane = 
+   End
+   Begin DataPane = 
+      Begin ParameterDefaults = ""
+      End
+      Begin ColumnWidths = 9
+         Width = 284
+         Width = 1000
+         Width = 1000
+         Width = 1000
+         Width = 1000
+         Width = 1000
+         Width = 1000
+         Width = 1000
+         Width = 1000
+      End
+   End
+   Begin CriteriaPane = 
+      Begin ColumnWidths = 11
+         Column = 1440
+         Alias = 900
+         Table = 1170
+         Output = 720
+         Append = 1400
+         NewValue = 1170
+         SortType = 1350
+         SortOrder = 1410
+         GroupBy = 1350
+         Filter = 1350
+         Or = 1350
+         Or = 1350
+         Or = 1350
+      End
+   End
+End
+' , @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'VIEW',@level1name=N'V_lista'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_DiagramPaneCount', @value=1 , @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'VIEW',@level1name=N'V_lista'
+GO
+USE [master]
+GO
+ALTER DATABASE [sdi2] SET  READ_WRITE 
+GO

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data.SqlClient;
+using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Tests
@@ -34,6 +35,22 @@ namespace Tests
             {
                 conn.Open();
                 Assert.AreEqual(System.Data.ConnectionState.Open, conn.State);
+            }
+        }
+
+        public void BuildDb()
+        {
+            using (SqlConnection conn = new SqlConnection(@"Server=(localdb)\MSSQLLocalDB;Database=master;Trusted_Connection=True"))
+            {
+                conn.Open();
+                string script = File.ReadAllText(@"TestCDCI\Tests\CreateDB.sql");
+
+                using (SqlCommand command = new SqlCommand(script, conn))
+                {
+                    int a = command.ExecuteNonQuery();
+                    Assert.IsTrue(a > -1);
+                    Assert.IsTrue(a > 0);
+                }
             }
         }
     }
