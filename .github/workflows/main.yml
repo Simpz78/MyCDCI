@@ -20,8 +20,7 @@ jobs:
         ls "c:\Program Files\Microsoft SQL Server\130\LocalDB\Binn"
     - name: Create DB Instance 
       run: 
-        SqlLocalDB start MSSQLLocalDB
-        sqlcmd -S "(localdb)\MSSQLLocalDB" 
+        SqlLocalDB start MSSQLLocalDB 
     - name: update database schema using dacpac
       uses: abelsquidhead/dacpac-deploy@master
       with:
