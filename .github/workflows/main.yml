@@ -31,6 +31,8 @@ jobs:
       run: nuget restore TestCDCI.sln
     - name: Build the solution
       run: msbuild TestCDCI.sln -p:Configuration=Debug
+    - name: Running test
+      run:  '& "$(vswhere -property installationPath)\Common7\IDE\Extensions\TestPlatform\VSTest.Console.exe" Tests\bin\Debug\Tests.dll'
 
 
     
