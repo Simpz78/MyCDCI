@@ -17,8 +17,7 @@ jobs:
       run: |
         echo "ls TestCDCI\DB"
         ls "TestCDCI\DB"
-        Import-Module -Name SQLPS -DisableNameChecking
-        'SQL01', 'SQL02' | ForEach-Object {Get-ChildItem -Path &quot;SQLSERVER:\SQL\$_&quot;} | Select-Object -Property ComputerNamePhysicalNetBIOS, Name, DisplayName, InstanceName
+        ls "c:\Program Files\Microsoft SQL Server"
     - name: update database schema using dacpac
       uses: abelsquidhead/dacpac-deploy@master
       with:
