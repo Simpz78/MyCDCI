@@ -24,6 +24,13 @@ jobs:
       run: |
         echo "ls TestCDCI\DB"
         ls "TestCDCI\DB"
+    - name: update database schema using dacpac
+      run: >
+        "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\Common7\IDE\Extensions\Microsoft\SQLDB\DAC\150\sqlpackage.exe" 
+        /Action:Publish 
+        /SourceFile:"TestCDCI\DB\sdi.dapac" 
+        /TargetConnectionString:"${{ secrets.DATABASE_CONNECTION_STRING }}" 
+        /p:BlockOnPossibleDataLoss=False
 
     
 
