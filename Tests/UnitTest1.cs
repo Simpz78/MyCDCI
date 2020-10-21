@@ -38,6 +38,7 @@ namespace Tests
             }
         }
 
+        [TestMethod]
         public void BuildDb()
         {
             using (SqlConnection conn = new SqlConnection(@"Server=(localdb)\MSSQLLocalDB;Database=master;Trusted_Connection=True"))
