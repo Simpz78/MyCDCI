@@ -45,6 +45,7 @@ namespace Tests
             {
                 conn.Open();
                 string script = File.ReadAllText(@"D:\a\MyCDCI\MyCDCI\Tests\CreateDB.sql");
+                script = script.Replace("\r\n", " ");
 
                 using (SqlCommand command = new SqlCommand(script, conn))
                 {
