@@ -30,7 +30,7 @@ namespace Tests
             TestCDCI.Class c = new TestCDCI.Class();
             string testString = c.ConnectionString;
 
-            using (SqlConnection conn = new SqlConnection(c.ConnectionString))
+            using (SqlConnection conn = new SqlConnection(@"Server=(localdb)\MSSQLLocalDB;Database=master;Trusted_Connection=True"))
             {
                 conn.Open();
                 Assert.AreEqual(System.Data.ConnectionState.Open, conn.State);
