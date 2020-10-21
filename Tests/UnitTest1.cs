@@ -44,7 +44,7 @@ namespace Tests
             using (SqlConnection conn = new SqlConnection(@"Server=(localdb)\MSSQLLocalDB;Database=master;Trusted_Connection=True"))
             {
                 conn.Open();
-                string script = File.ReadAllText(@"D:\a\MyCDCI\MyCDCI\TestCDCI\Tests\CreateDB.sql");
+                string script = File.ReadAllText(@"D:\a\MyCDCI\MyCDCI\Tests\CreateDB.sql");
 
                 using (SqlCommand command = new SqlCommand(script, conn))
                 {
