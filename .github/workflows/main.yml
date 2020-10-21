@@ -25,12 +25,11 @@ jobs:
         echo "ls TestCDCI\DB"
         ls "TestCDCI\DB"
     - name: update database schema using dacpac
-      run: >
-        "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\Common7\IDE\Extensions\Microsoft\SQLDB\DAC\150\sqlpackage.exe" 
-        /Action:Publish 
-        /SourceFile:"D:\a\MyCDCI\MyCDCI\TestCDCI\DB\sdi.dapac" 
-        /TargetConnectionString:"${{ secrets.DATABASE_CONNECTION_STRING }}" 
-        /p:BlockOnPossibleDataLoss=False
+      uses: abelsquidhead/dacpac-deploy@master
+        with:
+          connectionString: ${{ secrets.DATABASE_CONNECTION_STRING }}
+          dacpac: 'TestCDCI\DB\sdi.dapac'
+          additionalArguments: '/p:BlockOnPossibleDataLoss=False'
 
     
 
