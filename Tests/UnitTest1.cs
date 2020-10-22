@@ -56,8 +56,24 @@ namespace Tests
                 using (SqlCommand command = new SqlCommand(script, conn))
                 {
                     int a = command.ExecuteNonQuery();
-                    Assert.IsTrue(a > -1);
-                    Assert.IsTrue(a > 0);
+                    //è -1 bisogna fare una select o una insert
+                }
+
+                using (SqlCommand command = new SqlCommand())
+                {
+                    command.Connection = conn;
+                    command.CommandText = "SELECT * FROM FattureRicevute";
+
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        while(reader.Read())
+                        {
+                            Assert.AreEqual("1.zip", reader["NomeFile"].ToString());
+                            Assert.AreEqual(1, int.Parse(reader["ID"].ToString()));
+                        }
+
+                    }
+                    //è -1 bisogna fare una select o una insert
                 }
             }
         }
