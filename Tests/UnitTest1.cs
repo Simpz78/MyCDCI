@@ -25,11 +25,13 @@ namespace Tests
             Assert.AreEqual("Server=localhost;Database=sdi;User ID=studioboost;Password=studioboost", testString);
         }
 
+
         [TestMethod]
         public void TestConnection()
         {
             TestCDCI.Class c = new TestCDCI.Class();
             string testString = c.ConnectionString;
+
 
             using (SqlConnection conn = new SqlConnection(@"Server=(localdb)\MSSQLLocalDB;Database=sdi;Trusted_Connection=True"))
             {
@@ -77,5 +79,7 @@ namespace Tests
                 }
             }
         }
+
+
     }
 }
