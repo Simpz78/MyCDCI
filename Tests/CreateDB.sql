@@ -17,5 +17,6 @@ CREATE TABLE FattureRicevute(
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY];
 
 INSERT INTO FattureRicevute (NomeFile) VALUES ('1.zip');
+INSERT INTO FattureRicevute (NomeFile) VALUES ('2.zip');
 
  
