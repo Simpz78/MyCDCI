@@ -1,15 +1,6 @@
-CREATE TABLE FattureRicevute(
+CREATE TABLE FT(
 	[Id] [int] IDENTITY(1,1) NOT NULL,
 	[NomeFile] [nvarchar](150) NULL,
-	[Hash] [nvarchar](max) NULL,
-	[CodiceDestinatario] [nvarchar](50) NULL,
-	[Formato] [nvarchar](50) NULL,
-	[MessageId] [nvarchar](50) NULL,
-	[IdentificativoSdi] [nvarchar](50) NULL,
-	[EsitoSpedizione] [bit] NULL,
-	[ErroreSpedizione] [nvarchar](max) NULL,
-	[data] [smalldatetime] NULL,
-	[IdFattureZIP] [int] NULL,
  CONSTRAINT [PK_FattureRicevute] PRIMARY KEY CLUSTERED 
 (
 	[Id] ASC

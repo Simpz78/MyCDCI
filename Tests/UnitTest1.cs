@@ -64,7 +64,7 @@ namespace Tests
                 using (SqlCommand command = new SqlCommand())
                 {
                     command.Connection = conn;
-                    command.CommandText = "SELECT * FROM FattureRicevute";
+                    command.CommandText = "SELECT * FROM FT";
 
                     using (SqlDataReader reader = command.ExecuteReader())
                     {
@@ -78,6 +78,19 @@ namespace Tests
                     //è -1 bisogna fare una select o una insert
                 }
             }
+        }
+
+        [TestMethod]
+        public void IntToStringEnum()
+        {
+            string test = "1";
+
+            FinalMoreScore f = (FinalMoreScore)Enum.Parse(typeof(FinalMoreScore), test);
+
+            Assert.AreEqual("D", f.ToString());
+
+            
+
         }
 
 
