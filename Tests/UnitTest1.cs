@@ -33,7 +33,7 @@ namespace Tests
             string testString = c.ConnectionString;
 
 
-            using (SqlConnection conn = new SqlConnection(@"Server=(localdb)\MSSQLLocalDB;Database=sdi;Trusted_Connection=True"))
+            using (SqlConnection conn = new SqlConnection(@"Server=(localdb)\MSSQLLocalDB;Database=testDB;Trusted_Connection=True"))
             {
                 conn.Open();
                 Assert.AreEqual(System.Data.ConnectionState.Open, conn.State);
